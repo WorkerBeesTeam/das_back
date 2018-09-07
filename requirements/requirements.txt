@@ -1,0 +1,8 @@
+Django
+django-environ
+django-filter
+djangorestframework
+djangorestframework-jwt
+djangorestframework-filters
+mysqlclient
+openpyxl

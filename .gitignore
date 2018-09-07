@@ -1,0 +1,10 @@
+/venv
+/front
+/test-front
+__pycache__/
+migrations/
+
+*.env
+*.pyc
+*~
+
