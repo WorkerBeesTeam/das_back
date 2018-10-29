@@ -8,4 +8,5 @@ api_router.register('logs', viewsets.LogViewSet, base_name='logs')
 api_router.register('detail', viewsets.HouseDetailViewSet, base_name='detail')
 #api_router.register('users', viewsets.UserViewSet)
 api_router.register('code', viewsets.CodeViewSet, base_name='code')
+api_router.register('checkers', viewsets.CheckerTypeViewSet, base_name='checkers')
 

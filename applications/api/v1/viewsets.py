@@ -119,6 +119,12 @@ class HouseDetailViewSet(viewsets.ViewSet):
         signType_qset = houseModels.SignType.objects.using(conn_name).all()
         signType_srlz = houseSerializers.SignTypeSerializer(signType_qset, many=True)
 
+        statusType_qset = houseModels.StatusType.objects.using(conn_name).all()
+        statusType_srlz = houseSerializers.StatusTypeSerializer(statusType_qset, many=True)
+
+        statuses_qset = houseModels.Status.objects.using(conn_name).all()
+        statuses_srlz = houseSerializers.StatusesSerializer(statuses_qset, many=True)
+
         param_qset = houseModels.ParamItem.objects.using(conn_name).all()
         param_srlz = houseSerializers.ParamItemSerializer(param_qset, many=True)
 
@@ -134,12 +140,20 @@ class HouseDetailViewSet(viewsets.ViewSet):
             'groupTypes': groupType_srlz.data,
             'itemTypes': itemType_srlz.data,
             'signTypes': signType_srlz.data,
+            'statusTypes': statusType_srlz.data,
+            'statuses': statuses_srlz.data,
             })
 #    serializer_class = HouseDetailSerializer
 
 #class UserViewSet(viewsets.ModelViewSet):
 #    queryset = get_user_model().objects.using(conn_name).all()
 #    serializer_class = houseSerializers.UserSerializer
+
+class CheckerTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = houseSerializers.CheckerTypeSerializer
+    def get_queryset(self):
+        conn_name = checkConnection(self.request)[1]
+        return houseModels.CheckerType.objects.using(conn_name).all()
 
 class SectionViewSet(viewsets.ModelViewSet):
     serializer_class = houseSerializers.SectionSerializer

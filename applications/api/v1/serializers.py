@@ -49,6 +49,21 @@ class SignTypeSerializer(serializers.ModelSerializer):
         model = houseModels.SignType
         fields = '__all__'
 
+class CheckerTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.CheckerType
+        fields = '__all__'
+
+class StatusTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.StatusType
+        fields = '__all__'
+
+class StatusesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.Status
+        fields = '__all__'
+
 class SectionSerializer(serializers.ModelSerializer):
     groups = GroupSerializer(many=True, read_only=True)
     
