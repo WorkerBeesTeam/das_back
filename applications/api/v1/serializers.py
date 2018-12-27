@@ -105,7 +105,7 @@ class ValuesSerializer(serializers.ModelSerializer):
 class DeviceItemSerializer(ValuesSerializer):
     class Meta:
         model = houseModels.DeviceItem
-        fields = ('id', 'name', 'type_id', 'unit', 'group_id', 'device_id', 'parent_id', 'value', 'raw_value')
+        fields = ('id', 'name', 'type_id', 'extra', 'group_id', 'device_id', 'parent_id', 'value', 'raw_value')
 
 class CheckerTypeSerializer(serializers.ModelSerializer):
     class Meta:
