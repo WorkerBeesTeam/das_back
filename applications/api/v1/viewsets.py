@@ -25,13 +25,25 @@ class HouseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.request.user.employee.team.in_team.all()
 
+class EventLogRangeFilter(rf_filters.FilterSet):
+    pk = rf_filters.NumericRangeFilter()
+
 class EventLogViewSet(viewsets.ModelViewSet): 
 #    queryset = houseModels.EventLog.objects.using(conn_name).all()
     serializer_class = houseSerializers.EventLogSerializer
-    filter_backends = (filters.OrderingFilter,)
+    filter_backends = (filters.OrderingFilter,EventLogRangeFilter)
     permission_classes = (AllowAny,)
     def get_queryset(self):
         conn_name = checkConnection(self.request)[1]
+
+        try:
+            pk_from = int(self.request.GET.get('pk_from'))
+            pk_to = int(self.request.GET.get('pk_to'))
+            if pk_from != 0 and pk_to != 0:
+                return houseModels.EventLog.objects.using(conn_name).filter(id__range=[pk_from,pk_to])
+        except:
+            pass
+
         return houseModels.EventLog.objects.using(conn_name).all()
 
 # ------------------- Logs -------------------------
