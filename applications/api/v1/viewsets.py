@@ -25,13 +25,10 @@ class HouseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.request.user.employee.team.in_team.all()
 
-class EventLogRangeFilter(rf_filters.FilterSet):
-    pk = rf_filters.NumericRangeFilter()
-
 class EventLogViewSet(viewsets.ModelViewSet): 
 #    queryset = houseModels.EventLog.objects.using(conn_name).all()
     serializer_class = houseSerializers.EventLogSerializer
-    filter_backends = (filters.OrderingFilter,EventLogRangeFilter)
+    filter_backends = (filters.OrderingFilter,)
     permission_classes = (AllowAny,)
     def get_queryset(self):
         conn_name = checkConnection(self.request)[1]
