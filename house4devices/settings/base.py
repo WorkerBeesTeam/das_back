@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     # Django Packages
     'django_filters',
@@ -50,6 +51,8 @@ INSTALLED_APPS = [
     'applications.house',
     'applications.house_list'
 ]
+
+SITE_ID=1
 
 ROOT_URLCONF = 'house4devices.urls'
 
@@ -77,7 +80,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [FRONTEND_ROOT],
+        'DIRS': [FRONTEND_ROOT, project_root + '/house4devices/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
