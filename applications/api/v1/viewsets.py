@@ -28,7 +28,8 @@ class HouseViewSet(viewsets.ModelViewSet):
 class EventLogViewSet(viewsets.ModelViewSet): 
 #    queryset = houseModels.EventLog.objects.using(conn_name).all()
     serializer_class = houseSerializers.EventLogSerializer
-    filter_backends = (filters.OrderingFilter,)
+    filter_backends = (filters.SearchFilter,filters.OrderingFilter,)
+    search_fields = ('msg', 'who')
     permission_classes = (AllowAny,)
     def get_queryset(self):
         conn_name = checkConnection(self.request)[1]
