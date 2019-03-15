@@ -11,6 +11,8 @@ if hasattr(builtins, "CURRENT_ENV"):
 # read the .env file associated with the settings that're loaded
 env.read_env('{0}/house4devices/{1}.env'.format(project_root, CURRENT_ENV))
 
+DAI_SERVER_PATH=env('DAI_SERVER_PATH')
+
 FRONTEND_ROOT = env('FRONTEND_ROOT')
 if not FRONTEND_ROOT.startswith('/'):
     FRONTEND_ROOT = str(environ.Path("{0}/{1}".format(project_root, FRONTEND_ROOT)))

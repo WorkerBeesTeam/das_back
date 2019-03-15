@@ -28,6 +28,7 @@ from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify
 
 from applications.api.v1.routes import api_router
 from applications.house_list import views
+import subprocess
 
 @ensure_csrf_cookie
 def show_main(req):
@@ -88,6 +89,31 @@ def upload_t(req):
         os.system("/opt/send_t {0} {1}".format(file_name, email))        
     return HttpResponse(status=204)
 
+
+def upload_firmware(req):
+   # os.system("/opt/dai/DaiServer -l a")        
+    if req.method == 'POST' and req.FILES['fileKey']:
+        project_id = req.GET.get('id')
+        devitem_id = req.GET.get('item_id')
+        input_file = req.FILES['fileKey']
+        file_name = input_file.name
+        file_path = '/var/tmp/firmware'
+        #if (house_id != None):
+        #    file_path += '.' + house_id
+        #if (item_id != None):
+        #    file_path += '.' + item_id
+        file_path += '.dat'
+        with open(file_path, 'wb+') as destination:
+            for chunk in input_file.chunks():
+                destination.write(chunk)
+        args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--send_file', project_id, devitem_id, file_name, file_path]
+        print(subprocess.call(args))
+       # print('hello' + str(subprocess.call(['/opt/dai/DaiServer -l a'], shell=True)))
+ 
+        return HttpResponse(status = 200)
+    return HttpResponse(status = 204)
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -104,6 +130,7 @@ urlpatterns = [
 
     url(r'^export/excel', views.export_excel),
     url(r'^upload_t', upload_t),
+    url(r'^api/v1/upload/firmware/$', upload_firmware),
 
     url(r'^manage/(?P<houseId>\d+)$', lambda req, houseId: HttpResponseRedirect("/house/{0}/manage".format(houseId))),
     url(r'^$', show_main, name='index'),
