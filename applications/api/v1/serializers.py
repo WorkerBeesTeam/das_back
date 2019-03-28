@@ -42,7 +42,7 @@ class GroupTypeSerializer(serializers.ModelSerializer):
 class ItemTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = houseModels.ItemType
-        fields = ('id', 'name', 'title', 'isRaw', 'groupType_id', 'groupDisplay', 'sign_id', 'registerType', 'saveAlgorithm')
+        fields = ('id', 'name', 'title', 'isRaw', 'groupType_id', 'sign_id', 'registerType', 'saveAlgorithm')
 
 class SignTypeSerializer(serializers.ModelSerializer):
     class Meta:
