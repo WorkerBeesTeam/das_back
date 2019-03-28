@@ -2,6 +2,7 @@ from rest_framework import routers
 from applications.api.v1 import viewsets
 
 api_router = routers.SimpleRouter()
+api_router.register('team', viewsets.TeamViewSet, base_name='team')
 api_router.register('house', viewsets.HouseViewSet, base_name='house')
 api_router.register('events', viewsets.EventLogViewSet, base_name='events')
 api_router.register('logs', viewsets.LogViewSet, base_name='logs')

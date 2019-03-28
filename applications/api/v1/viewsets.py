@@ -9,10 +9,33 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import rest_framework_filters as rf_filters
 
+from applications import add_db_to_connections
 from applications.house import models as houseModels
 from applications.house_list import models as hListModels
 from applications.house_list.tool import checkConnection
 from applications.api.v1 import serializers as houseSerializers
+
+class TeamViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request):
+        house, conn_name = checkConnection(self.request)
+        values = house.teams.values_list('employee__user_id', 'employee__user__username','employee__user__first_name','employee__user__last_name')
+        result = []
+        for id,login,fname,lname in values:
+            if id:
+                name = ''
+                if fname:
+                    name = fname
+                if lname:
+                    if name:
+                        name += ' '
+                    name += lname
+                if not name:
+                    name = login
+                result.append({ 'id': id, 'name': name })
+
+        return Response({'count': len(result), 'results': result})
 
 class HouseViewSet(viewsets.ModelViewSet): 
 #    queryset = hListModels.House.objects.using(conn_name).all().order_by('-lastUsage')
@@ -22,6 +45,7 @@ class HouseViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,filters.OrderingFilter)
     search_fields = ('name', 'title', 'description')
 
+    lookup_field = 'name'
     def get_queryset(self):
         return self.request.user.employee.team.in_team.all()
 
@@ -112,7 +136,9 @@ class HouseDetailViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
-        house, conn_name = checkConnection(request)
+        house = get_object_or_404(hListModels.House, name=request.GET.get('project_name', ''), teams__pk=request.user.employee.team_id)
+        conn_name = house.name
+        add_db_to_connections(conn_name)
 
         sct_qset = houseModels.Section.objects.using(conn_name).all()
         sct_srlz = houseSerializers.SectionSerializer(sct_qset, many=True)
