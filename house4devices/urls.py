@@ -91,24 +91,20 @@ def upload_t(req):
 
 
 def upload_firmware(req):
-   # os.system("/opt/dai/DaiServer -l a")        
     if req.method == 'POST' and req.FILES['fileKey']:
+        user_id = req.user.id
         project_id = req.GET.get('id')
         devitem_id = req.GET.get('item_id')
         input_file = req.FILES['fileKey']
         file_name = input_file.name
         file_path = '/var/tmp/firmware'
-        #if (house_id != None):
-        #    file_path += '.' + house_id
-        #if (item_id != None):
-        #    file_path += '.' + item_id
         file_path += '.dat'
         with open(file_path, 'wb+') as destination:
             for chunk in input_file.chunks():
                 destination.write(chunk)
-        args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--send_file', project_id, devitem_id, file_name, file_path]
+        #args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--send_file', project_id, devitem_id, file_name, file_path]
+	args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, 'send_file_name', file_name]
         print(subprocess.call(args))
-       # print('hello' + str(subprocess.call(['/opt/dai/DaiServer -l a'], shell=True)))
  
         return HttpResponse(status = 200)
     return HttpResponse(status = 204)
