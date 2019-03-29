@@ -103,7 +103,7 @@ def upload_firmware(req):
             for chunk in input_file.chunks():
                 destination.write(chunk)
         #args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--send_file', project_id, devitem_id, file_name, file_path]
-	args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, 'send_file_name', file_name]
+        args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, 'send_file_name', file_name]
         print(subprocess.call(args))
  
         return HttpResponse(status = 200)
