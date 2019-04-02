@@ -26,7 +26,7 @@ from wsgiref.util import FileWrapper
 
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
-from applications.api.v1.routes import api_router
+from applications.api.v1.routes import urlpatterns as api_urlpatterns
 from applications.house_list import views
 import subprocess
 
@@ -89,34 +89,13 @@ def upload_t(req):
         os.system("/opt/send_t {0} {1}".format(file_name, email))        
     return HttpResponse(status=204)
 
-
-def upload_firmware(req):
-    if req.method == 'POST' and req.FILES['fileKey']:
-        user_id = req.user.id
-        project_id = req.GET.get('id')
-        devitem_id = req.GET.get('item_id')
-        input_file = req.FILES['fileKey']
-        file_name = input_file.name
-        file_path = '/var/tmp/firmware'
-        file_path += '.dat'
-        with open(file_path, 'wb+') as destination:
-            for chunk in input_file.chunks():
-                destination.write(chunk)
-        #args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--send_file', project_id, devitem_id, file_name, file_path]
-        args = ['/usr/bin/sudo', '-u', 'dai', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, 'send_file_name', file_name]
-        print(subprocess.call(args))
- 
-        return HttpResponse(status = 200)
-    return HttpResponse(status = 204)
-
-
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     url(r'^telegrambot/', include(('telegrambot.urls', 'telegrambot'))),
 
     # API:V1
-    url(r'^api/v1/', include(api_router.urls)),
+    url(r'^api/v1/', include(api_urlpatterns)),
     url(r'^api/token/auth/', obtain_jwt_token),
     url(r'^api/token/refresh/', refresh_jwt_token),
     url(r'^api/token/verify/', verify_jwt_token),
@@ -126,7 +105,6 @@ urlpatterns = [
 
     url(r'^export/excel', views.export_excel),
     url(r'^upload_t', upload_t),
-    url(r'^api/v1/upload/firmware/$', upload_firmware),
 
     url(r'^manage/(?P<houseId>\d+)$', lambda req, houseId: HttpResponseRedirect("/house/{0}/manage".format(houseId))),
     url(r'^$', show_main, name='index'),

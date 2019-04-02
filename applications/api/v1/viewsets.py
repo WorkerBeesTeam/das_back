@@ -1,12 +1,17 @@
+import time
+import subprocess
+
+from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 import django_filters
 
 #from django_filters import rest_framework as filters
-from rest_framework import filters, viewsets
+from rest_framework import filters, viewsets, views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser
 import rest_framework_filters as rf_filters
 
 from applications import add_db_to_connections
@@ -48,6 +53,31 @@ class HouseViewSet(viewsets.ModelViewSet):
     lookup_field = 'name'
     def get_queryset(self):
         return self.request.user.employee.team.in_team.all()
+
+class FileUploadView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+    parser_classes = (MultiPartParser,)
+
+    def put(self, req, format=None):
+        checkConnection(req)
+
+        user_id = str(req.user.id)
+        project_id = req.GET.get('id')
+        devitem_id = req.GET.get('item_id')
+        input_file = req.FILES['fileKey']
+        file_name = input_file.name
+        file_path = '/var/tmp/dai_item_file_' + str(time.time())
+        file_path += '.dat'
+        with open(file_path, 'wb+') as destination:
+            for chunk in input_file.chunks():
+                destination.write(chunk)
+        
+        args = ['/usr/bin/sudo', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, '--send_file_name', file_name]
+        ret = subprocess.call(args)
+        if ret != 0:
+            print(ret)
+            print('Failed upload device item file')
+        return Response(status=204)
 
 class EventLogViewSet(viewsets.ModelViewSet): 
 #    queryset = houseModels.EventLog.objects.using(conn_name).all()

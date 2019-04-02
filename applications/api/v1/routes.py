@@ -1,3 +1,5 @@
+from django.conf.urls import url
+
 from rest_framework import routers  
 from applications.api.v1 import viewsets
 
@@ -11,3 +13,8 @@ api_router.register('detail', viewsets.HouseDetailViewSet, base_name='detail')
 api_router.register('code', viewsets.CodeViewSet, base_name='code')
 api_router.register('checkers', viewsets.CheckerTypeViewSet, base_name='checkers')
 
+urlpatterns = [
+    url(r'^write_item_file/$', viewsets.FileUploadView.as_view()),
+]
+
+urlpatterns += api_router.urls

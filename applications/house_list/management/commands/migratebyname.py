@@ -13,10 +13,10 @@ class Command(BaseCommand):
         parser.add_argument('name', help='Латинский аналог имени, должен быть уникальным')
 
     def handle(self, *args, **options):
-        house = House.objects.get(name=options['name'])
-        add_db_to_connections(house.name)
+        house_name = options['name']
+        add_db_to_connections(house_name)
             
-        self.make_and_migrate(house.name)
+        self.make_and_migrate(house_name)
 
     def make_and_migrate(self, db_id):
         call_command('migrate', '--database', db_id, 'house')

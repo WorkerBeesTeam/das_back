@@ -62,7 +62,7 @@ class StatusTypeSerializer(serializers.ModelSerializer):
 class StatusesSerializer(serializers.ModelSerializer):
     class Meta:
         model = houseModels.Status
-        fields = '__all__'
+        fields = ('id', 'groupType_id', 'type_id', 'name', 'text', 'inform')
 
 class SectionSerializer(serializers.ModelSerializer):
     groups = GroupSerializer(many=True, read_only=True)
