@@ -117,7 +117,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = houseModels.Device
-        fields = ('id', 'address', 'name', 'checker_id', 'items')
+        fields = ('id', 'name', 'extra', 'checker_id', 'items')
 
 class EventLogSerializer(serializers.ModelSerializer):
     class Meta:
