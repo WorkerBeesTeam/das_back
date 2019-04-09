@@ -30,7 +30,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = houseModels.Group
-        fields = ('id', 'type_id', 'params', 'mode')
+        fields = ('id', 'title', 'type_id', 'params', 'mode')
   
 #class GroupType(models.Model):
 #    name = models.CharField(max_length=64)
