@@ -22,10 +22,15 @@ class ParamValueSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     params = ParamValueSerializer(many=True, read_only=True)
+    mode = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='mode_id'
+     )
 
     class Meta:
         model = houseModels.Group
-        fields = ('id', 'type_id', 'mode_id', 'params')
+        fields = ('id', 'type_id', 'params', 'mode')
   
 #class GroupType(models.Model):
 #    name = models.CharField(max_length=64)
@@ -102,10 +107,17 @@ class ValuesSerializer(serializers.ModelSerializer):
             pass
         return val
 
+class Device_Item_Value_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.Device_Item_Value
+        fields = ('raw', 'display')
+
 class DeviceItemSerializer(ValuesSerializer):
+    val = Device_Item_Value_Serializer(required=True)
+
     class Meta:
         model = houseModels.DeviceItem
-        fields = ('id', 'name', 'type_id', 'extra', 'group_id', 'device_id', 'parent_id', 'value', 'raw_value')
+        fields = ('id', 'name', 'type_id', 'extra', 'group_id', 'device_id', 'parent_id', 'value', 'raw_value', 'val')
 
 class CheckerTypeSerializer(serializers.ModelSerializer):
     class Meta:
