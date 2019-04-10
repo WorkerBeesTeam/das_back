@@ -76,48 +76,47 @@ class SectionSerializer(serializers.ModelSerializer):
         model = houseModels.Section
         fields = ('id', 'name', 'dayStart', 'dayEnd', 'groups')
 
-class ValuesSerializer(serializers.ModelSerializer):
-    value = serializers.SerializerMethodField()
-    raw_value = serializers.SerializerMethodField()
+def normalize_value(val):
+    try:
+        if type(val) != str:
+            raise
 
-    def get_value(self, obj):
-        return self.normalize_value(obj.value)
-    
-    def get_raw_value(self, obj):
-        return self.normalize_value(obj.raw_value)
+        if len(val) > 2 and ((val[0] == '[' and val[-1] == ']') or (val[0] == '{' and val[-1] == '}')):
+            return json.loads(val)
 
-    def normalize_value(self, val):
+        if val.lower() == 'true':
+            return True
+        elif val.lower() == 'false':
+            return False
+
         try:
-            if type(val) != str:
-                raise
-
-            if len(val) > 2 and ((val[0] == '[' and val[-1] == ']') or (val[0] == '{' and val[-1] == '}')):
-                return json.loads(val)
-
-            if val.lower() == 'true':
-                return True
-            elif val.lower() == 'false':
-                return False
-
-            try:
-                num_val = int(val)
-            except:
-                num_val = float(val)
+            num_val = int(val)
         except:
-            pass
-        return val
+            num_val = float(val)
+    except:
+        pass
+    return val
 
 class Device_Item_Value_Serializer(serializers.ModelSerializer):
+    display = serializers.SerializerMethodField()
+    raw = serializers.SerializerMethodField()
+
+    def get_display(self, obj):
+        return normalize_value(obj.display)
+    
+    def get_raw(self, obj):
+        return normalize_value(obj.raw)
+
     class Meta:
         model = houseModels.Device_Item_Value
         fields = ('raw', 'display')
 
-class DeviceItemSerializer(ValuesSerializer):
+class DeviceItemSerializer(serializers.ModelSerializer):
     val = Device_Item_Value_Serializer(required=True)
 
     class Meta:
         model = houseModels.DeviceItem
-        fields = ('id', 'name', 'type_id', 'extra', 'group_id', 'device_id', 'parent_id', 'value', 'raw_value', 'val')
+        fields = ('id', 'name', 'type_id', 'extra', 'group_id', 'device_id', 'parent_id', 'val')
 
 class CheckerTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -136,7 +135,16 @@ class EventLogSerializer(serializers.ModelSerializer):
         model = houseModels.EventLog
         fields = '__all__'
 
-class LogSerializer(ValuesSerializer):
+class LogSerializer(serializers.ModelSerializer):
+    value = serializers.SerializerMethodField()
+    raw_value = serializers.SerializerMethodField()
+
+    def get_value(self, obj):
+        return normalize_value(obj.value)
+    
+    def get_raw_value(self, obj):
+        return normalize_value(obj.raw_value)
+
     class Meta:
         model = houseModels.Logs
         fields = ('date', 'item_id', 'raw_value', 'value')
