@@ -12,6 +12,8 @@ api_router.register('detail', viewsets.HouseDetailViewSet, base_name='detail')
 #api_router.register('users', viewsets.UserViewSet)
 api_router.register('code', viewsets.CodeViewSet, base_name='code')
 api_router.register('checkers', viewsets.CheckerTypeViewSet, base_name='checkers')
+api_router.register('viewitem', viewsets.ViewItemViewSet, base_name='viewitem')
+api_router.register('savetimer', viewsets.SaveTimerViewSet, base_name='savetimer')
 
 urlpatterns = [
     url(r'^write_item_file/$', viewsets.FileUploadView.as_view()),

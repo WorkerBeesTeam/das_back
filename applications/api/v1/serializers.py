@@ -3,6 +3,21 @@ from rest_framework import serializers
 from applications.house import models as houseModels
 from applications.house_list import models as hListModels
 
+class SaveTimerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.Save_Timer
+        fields = ('id', 'interval')
+
+class ViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.View
+        fields = ('id', 'name')
+
+class ViewItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.ViewItem
+        fields = ('id', 'view_id', 'item_id')
+
 class HouseSerializer(serializers.ModelSerializer):
 #    device = UUIDField(format='hex_verbose')
     class Meta:
@@ -90,11 +105,15 @@ def normalize_value(val):
             return False
 
         try:
-            num_val = int(val)
+            val = int(val)
         except:
-            num_val = float(val)
+            val = float(val)
+
+        if val != val:
+            val = 'NaN'
     except:
         pass
+    
     return val
 
 class Device_Item_Value_Serializer(serializers.ModelSerializer):
@@ -128,7 +147,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = houseModels.Device
-        fields = ('id', 'name', 'extra', 'checker_id', 'items')
+        fields = ('id', 'name', 'extra', 'checker_id', 'check_interval', 'items')
 
 class EventLogSerializer(serializers.ModelSerializer):
     class Meta:

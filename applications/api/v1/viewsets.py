@@ -20,6 +20,21 @@ from applications.house_list import models as hListModels
 from applications.house_list.tool import checkConnection
 from applications.api.v1 import serializers as houseSerializers
 
+class SaveTimerViewSet(viewsets.ModelViewSet): 
+    serializer_class = houseSerializers.SaveTimerSerializer
+    def get_queryset(self):
+        conn_name = checkConnection(self.request)[1]
+        print('save_timer ' + conn_name)
+        print(houseModels.Save_Timer.objects.using(conn_name).all())
+        return houseModels.Save_Timer.objects.using(conn_name).all()
+        
+class ViewItemViewSet(viewsets.ModelViewSet): 
+    serializer_class = houseSerializers.ViewItemSerializer
+    def get_queryset(self):
+        conn_name = checkConnection(self.request)[1]
+        view_id = self.request.GET.get('view_id')
+        return houseModels.ViewItem.objects.using(conn_name).filter(view_id=view_id)
+        
 class TeamViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
@@ -194,6 +209,9 @@ class HouseDetailViewSet(viewsets.ViewSet):
         param_qset = houseModels.ParamItem.objects.using(conn_name).all()
         param_srlz = houseSerializers.ParamItemSerializer(param_qset, many=True)
 
+        view_qset = houseModels.View.objects.using(conn_name).all()
+        view_srlz = houseSerializers.ViewSerializer(view_qset, many=True)
+
         house.lastUsage = timezone.now()
         house.save()
 
@@ -208,6 +226,7 @@ class HouseDetailViewSet(viewsets.ViewSet):
             'signTypes': signType_srlz.data,
             'statusTypes': statusType_srlz.data,
             'statuses': statuses_srlz.data,
+            'views': view_srlz.data
             })
 #    serializer_class = HouseDetailSerializer
 
