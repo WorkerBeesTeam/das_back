@@ -35,6 +35,11 @@ class ParamValueSerializer(serializers.ModelSerializer):
         model = houseModels.ParamValue
         fields = ('id', 'value', 'group_id', 'param_id')
 
+class GroupStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.GroupStatus
+        fields = ('status_id', 'args')
+
 class GroupSerializer(serializers.ModelSerializer):
     params = ParamValueSerializer(many=True, read_only=True)
     mode = serializers.SlugRelatedField(
@@ -42,10 +47,11 @@ class GroupSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='mode_id'
      )
+    statuses = GroupStatusSerializer(many=True, read_only=True)
 
     class Meta:
         model = houseModels.Group
-        fields = ('id', 'title', 'type_id', 'params', 'mode')
+        fields = ('id', 'title', 'type_id', 'params', 'mode', 'statuses')
   
 #class GroupType(models.Model):
 #    name = models.CharField(max_length=64)
