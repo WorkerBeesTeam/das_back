@@ -36,6 +36,13 @@ class ParamValueSerializer(serializers.ModelSerializer):
         fields = ('id', 'value', 'group_id', 'param_id')
 
 class GroupStatusSerializer(serializers.ModelSerializer):
+    args = serializers.SerializerMethodField()
+
+    def get_args(self, obj):
+        if obj.args:
+            return obj.args.split("\n")
+        return []
+
     class Meta:
         model = houseModels.GroupStatus
         fields = ('status_id', 'args')
