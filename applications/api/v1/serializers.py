@@ -35,6 +35,11 @@ class ParamValueSerializer(serializers.ModelSerializer):
         model = houseModels.ParamValue
         fields = ('id', 'value', 'group_id', 'param_id')
 
+class GroupModeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.GroupMode
+        fields = ('id', 'name', 'group_type_id', 'title')
+
 class GroupStatusSerializer(serializers.ModelSerializer):
     args = serializers.SerializerMethodField()
 

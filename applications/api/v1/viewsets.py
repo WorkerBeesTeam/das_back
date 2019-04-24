@@ -1,10 +1,13 @@
 import time
 import subprocess
+import json
 
 from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
+from django.utils.translation import get_language, get_language_from_request
+from django.core import serializers
 import django_filters
 
 #from django_filters import rest_framework as filters
@@ -193,6 +196,9 @@ class HouseDetailViewSet(viewsets.ViewSet):
 
         groupType_qset = houseModels.GroupType.objects.using(conn_name).all()
         groupType_srlz = houseSerializers.GroupTypeSerializer(groupType_qset, many=True)
+
+        groupMode_qset = houseModels.GroupMode.objects.using(conn_name).all()
+        groupMode_srlz = houseSerializers.GroupModeSerializer(groupMode_qset, many=True)
         
         itemType_qset = houseModels.ItemType.objects.using(conn_name).all()
         itemType_srlz = houseSerializers.ItemTypeSerializer(itemType_qset, many=True)
@@ -214,6 +220,46 @@ class HouseDetailViewSet(viewsets.ViewSet):
 
         house.lastUsage = timezone.now()
         house.save()
+        
+        current_lang = get_language_from_request(request)
+        if current_lang != 'ru':
+            try:
+                translations = houseModels.Translation.objects.using(conn_name).get(lang=current_lang)
+                translations_dict = json.loads(translations.data)
+                scts_tr = translations_dict.get('sections', None)
+                groups_tr = translations_dict.get('groups', None)
+                self.translate_sections(sct_srlz.data, scts_tr, groups_tr)
+                 
+                devices_tr = translations_dict.get('devices', None)
+                items_tr = translations_dict.get('items', None)
+                self.translate_devices(dev_srlz.data, devices_tr, items_tr)
+
+                params_tr = translations_dict.get('params', None)
+                self.translate_objs(param_srlz.data, params_tr, 'title', 'description')
+
+                groupTypes_tr = translations_dict.get('groupTypes', None)
+                self.translate_objs(groupType_srlz.data, groupTypes_tr, 'title', 'description')
+  
+                groupModes_tr = translations_dict.get('groupModes', None)
+                self.translate_objs(groupMode_srlz.data, groupModes_tr, 'title')
+
+                itemTypes_tr = translations_dict.get('itemTypes', None)
+                self.translate_objs(itemType_srlz.data, itemTypes_tr, 'title')
+
+                signTypes_tr = translations_dict.get('signTypes', None)
+                self.translate_objs(signType_srlz.data, signTypes_tr, 'name')
+
+                statusTypes_tr = translations_dict.get('statusTypes', None)
+                self.translate_objs(statusType_srlz.data, statusTypes_tr, 'title')
+
+                statuses_tr = translations_dict.get('statuses', None)
+                self.translate_objs(statuses_srlz.data, statuses_tr, 'text')
+
+                views_tr = translations_dict.get('views', None)
+                self.translate_objs(view_srlz.data, views_tr, 'name')
+
+            except houseModels.Translation.DoesNotExist:
+                print('Oops! There is no translation for \'' + current_lang + '\' language')
 
         return Response({
             'id': house.id,
@@ -222,12 +268,50 @@ class HouseDetailViewSet(viewsets.ViewSet):
             'devices': dev_srlz.data,
             'params': param_srlz.data,
             'groupTypes': groupType_srlz.data,
+            'groupModes': groupMode_srlz.data,
             'itemTypes': itemType_srlz.data,
             'signTypes': signType_srlz.data,
             'statusTypes': statusType_srlz.data,
             'statuses': statuses_srlz.data,
             'views': view_srlz.data
             })
+
+    def translate_sections(self, sections, sections_tr, groups_tr):        
+        for sec in sections:
+            if sections_tr != None:
+                for i, sec_tr in enumerate(sections_tr):
+                    if sec_tr['id'] == sec['id']:
+                        if 'name' in sec_tr and 'name' in sec:
+                            sec['name'] = sec_tr['name']
+                        del sections_tr[i]
+                        break
+            groups = sec['groups']
+            self.translate_objs(groups, groups_tr, 'title')
+
+    def translate_devices(self, devices, devices_tr, items_tr):
+        for dev in devices:
+            if devices_tr != None:
+                for i, dev_tr in enumerate(devices_tr):
+                    if dev_tr['id'] == dev['id']:
+                        if 'name' in dev_tr and 'name' in dev:
+                            dev['name'] = dev_tr['name']
+                        del devices_tr[i]
+                        break
+            items = dev['items']
+            self.translate_objs(items, items_tr, 'name')
+
+    def translate_objs(self, origin_list, tr_list, *replace_list):
+        if tr_list == None or len(tr_list) == 0:
+            return
+        for obj in origin_list:
+            for i, obj_tr in enumerate(tr_list):
+                if obj_tr['id'] == obj['id']:
+                    for item in replace_list:
+                        if item in obj_tr and item in obj:
+                            obj[item] = obj_tr[item]
+                    del tr_list[i]
+                    break
+
 #    serializer_class = HouseDetailSerializer
 
 #class UserViewSet(viewsets.ModelViewSet):
