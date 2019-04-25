@@ -6,7 +6,6 @@ from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-from django.utils.translation import get_language, get_language_from_request
 from django.core import serializers
 import django_filters
 
@@ -17,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser
 import rest_framework_filters as rf_filters
 
-from applications import add_db_to_connections
+from applications import add_db_to_connections, get_current_language
 from applications.house import models as houseModels
 from applications.house_list import models as hListModels
 from applications.house_list.tool import checkConnection
@@ -221,7 +220,7 @@ class HouseDetailViewSet(viewsets.ViewSet):
         house.lastUsage = timezone.now()
         house.save()
         
-        current_lang = get_language_from_request(request)
+        current_lang = get_current_language(request)
         if current_lang != 'ru':
             try:
                 translations = houseModels.Translation.objects.using(conn_name).get(lang=current_lang)

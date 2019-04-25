@@ -26,20 +26,25 @@ from wsgiref.util import FileWrapper
 
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
+from applications import get_current_language
 from applications.api.v1.routes import urlpatterns as api_urlpatterns
 from applications.house_list import views
 import subprocess
 
 @ensure_csrf_cookie
 def show_main(req):
-    return render_to_response('index.html')
+    return HttpResponseRedirect('/' + get_current_language(req) + '/')
 
 @ensure_csrf_cookie
-def showAnyPath(req, path, document_root):
+def showAnyPath(req, lang, path, document_root):
+    if not lang:
+        lang = get_current_language(req)
+        return HttpResponseRedirect('/' + lang + '/' + path)
     try:
-        return serve(req, path, document_root)
+        path = lang + '/' + path
+        return serve(req, path, document_root + '/')
     except:
-        return serve(req, 'index.html', document_root)
+        return serve(req, '/' + lang + '/index.html', document_root)
 
 def update_file(req):
     upd_file = open(settings.MEDIA_ROOT + '/update.tar.gz', 'rb')
@@ -108,7 +113,15 @@ urlpatterns = [
 
     url(r'^manage/(?P<houseId>\d+)$', lambda req, houseId: HttpResponseRedirect("/house/{0}/manage".format(houseId))),
     url(r'^$', show_main, name='index'),
+    re_path(r'^(?P<lang>(ru|en|fr|es))$', showAnyPath, {
+        'path': 'index.html',
+        'document_root': settings.MEDIA_ROOT,
+    }),
+    re_path(r'^(?P<lang>(ru|en|fr|es))/(?P<path>(?!api).*)$', showAnyPath, {
+        'document_root': settings.MEDIA_ROOT,
+    }),
     re_path(r'^(?P<path>(?!api).*)$', showAnyPath, {
+        'lang': None,
         'document_root': settings.MEDIA_ROOT,
     }),
 ]
