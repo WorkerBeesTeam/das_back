@@ -41,8 +41,10 @@ class Command(BaseCommand):
             device = uuid.UUID(options['device']) if options['device'] else uuid.uuid4()
 
             house = House()
-            house.title = options.get('title', options['name'])
             house.name = options['name']
+            house.title = options.get('title')
+            if not house.title:
+                house.title = house.name
             house.latin_name = house.name
             if options['description']:
                 house.description = options['description']

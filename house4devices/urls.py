@@ -30,6 +30,8 @@ from applications import get_current_language
 from applications.api.v1.routes import urlpatterns as api_urlpatterns
 from applications.house_list import views
 import subprocess
+import re
+import os
 
 @ensure_csrf_cookie
 def show_main(req):
@@ -47,7 +49,17 @@ def showAnyPath(req, lang, path, document_root):
         return serve(req, '/' + lang + '/index.html', document_root)
 
 def update_file(req):
-    upd_file = open(settings.MEDIA_ROOT + '/update.tar.gz', 'rb')
+    name = req.GET.get('name', '?')
+    version = req.GET.get('version', '')
+    if not re.match('^\d{1,4}\.\d{1,4}\.\d{1,4}$', version):
+        version = '0.0.0'
+
+    file_name = settings.MEDIA_ROOT + '/updates/update.' + version + '.tar.gz'
+
+    if not os.path.isfile(file_name):
+        return HttpResponse(status=204)
+
+    upd_file = open(file_name, 'rb')
     response = HttpResponse(FileWrapper(upd_file), content_type='application/tar+gzip')
     response['Content-Disposition'] = 'attachment; filename="update.tar.gz"'
     return response
@@ -60,11 +72,13 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
-def version_file(req):
+def check_version(req):
     ver_file = open(settings.MEDIA_ROOT + '/version.json', 'rb')
     ver = ver_file.read()
 
     name = req.GET.get('name', '?')
+    client_ver = req.GET.get('version', '?')
+    doc = None
     try:
         import json
         doc = json.loads(ver.decode('utf-8'))
@@ -75,9 +89,60 @@ def version_file(req):
     except:
         print('error')
         cur_ver = '?'
-    print("Check version: {0} from: {1} {2} current: {3}".format(req.GET.get('version', '?'), name, get_client_ip(req), cur_ver))
+    print("Check version: {0} from: {1} {2} current: {3}".format(client_ver, name, get_client_ip(req), cur_ver))
 
-    return HttpResponse(ver, content_type='application/json')
+    if not name[:2] == 'B1' and not name[:2] == 'C0':# and not name[:2] == 'te':
+        doc['version'] = client_ver
+    elif not client_ver or client_ver == '?':
+        doc['version'] = '0.0.0'
+    else:
+        next_version = get_next_version(client_ver)
+        if (version_compare(next_version, cur_ver) > 0):
+            doc['version'] = client_ver
+        else:
+            doc['version'] = next_version
+
+    return HttpResponse(json.dumps(doc), content_type='application/json')
+
+
+def get_next_version(curr_version):
+    file_list = os.listdir(settings.MEDIA_ROOT + '/updates/')
+    expr = re.compile('^update\.(\d{1,4})\.(\d{1,4})\.(\d{1,4})\.tar\.gz$')
+    version_list = []
+    for file_name in file_list:
+        v = expr.match(file_name)
+        if v:
+            version_list.append((int(v.group(1)), int(v.group(2)), int(v.group(3))))
+
+    tmp = curr_version.split(".")
+    version_int = (int(tmp[0]), int(tmp[1]), int(tmp[2]))
+    version_list.append(version_int)
+    version_list.sort()
+
+    ver_position = 0
+    for position, item in enumerate(version_list):
+        if item == version_int:
+            ver_position = position
+    if ver_position >= (len(version_list) - 1):
+        return curr_version
+    else:
+        return '.'.join(str(x) for x in version_list[ver_position + 1])
+
+
+def version_compare(ver1, ver2): 
+    
+    arr1 = ver1.split(".")
+    arr2 = ver2.split(".")
+
+    i = 0 
+    while(i < len(arr1)): 
+        if int(arr2[i]) > int(arr1[i]): 
+            return -1
+        if int(arr1[i]) > int(arr2[i]): 
+            return 1
+        i += 1
+          
+    return 0
 
 from django.views.decorators.csrf import csrf_exempt
 import random
@@ -105,7 +170,7 @@ urlpatterns = [
     url(r'^api/token/refresh/', refresh_jwt_token),
     url(r'^api/token/verify/', verify_jwt_token),
 
-    url(r'^check_version', version_file),
+    url(r'^check_version', check_version),
     url(r'^update_file', update_file),
 
     url(r'^export/excel', views.export_excel),
