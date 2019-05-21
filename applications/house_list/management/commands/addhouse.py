@@ -6,6 +6,7 @@ from django.db import connection
 
 from applications import add_db_to_connections
 from applications.house_list.models import House, Team
+from . import sync_child_db
 
 class Command(BaseCommand):
     help = 'Add device house and create database for it'
@@ -17,6 +18,8 @@ class Command(BaseCommand):
         parser.add_argument('--description', help='Описание')
         parser.add_argument('--team-id', help='ID группы пользователей')
         parser.add_argument('--team-name', help='Имя группы пользователей')
+        parser.add_argument('--parent-id', help='ID родительского проектa')
+        parser.add_argument('--parent-name', help='Имя родительского проектa')
     
     def handle(self, *args, **options):
         try:
@@ -50,7 +53,7 @@ class Command(BaseCommand):
                 house.description = options['description']
             house.device = device
             house.team = team
-            
+
         conn = add_db_to_connections(house.name)
         
         with connection.cursor() as c:
@@ -67,6 +70,18 @@ class Command(BaseCommand):
 
                 print("New house {0} added with id: {1}.".format(house.title, house.id))
                 print("Device: {0}".format(str(device)))
+
+                if options['parent_id']:
+                    parent = House.objects.get(id=options['parent_id'])
+                elif options['parent_name']:
+                    parent = House.objects.get(name=options['parent_name'])
+
+                if parent:
+                    sync_child_db.Command().sync_data(house.name, parent.name)
+                    house.parent = parent
+                    house.save()
+
+
         except Exception as e:
             print(e)
             with connection.cursor() as c:

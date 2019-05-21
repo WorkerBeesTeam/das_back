@@ -34,7 +34,7 @@ class GroupParamSerializer(serializers.ModelSerializer):
     value = serializers.SlugRelatedField(
         many=False,
         read_only=True,
-        slug_field='group_param_id'
+        slug_field='value'
     )
     class Meta:
         model = houseModels.Group_Param
