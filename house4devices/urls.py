@@ -91,7 +91,7 @@ def check_version(req):
         cur_ver = '?'
     print("Check version: {0} from: {1} {2} current: {3}".format(client_ver, name, get_client_ip(req), cur_ver))
 
-    if not name[:2] == 'B1' and not name[:2] == 'C0' and name != 'sochi_0519':# and not name[:2] == 'te':
+    if not name[:2] == 'B1' and not name[:2] == 'B2'  and not name[:2] == 'C0' and name != 'sochi_0519':# and not name[:2] == 'te':
         doc['version'] = client_ver
     elif not client_ver or client_ver == '?':
         doc['version'] = '0.0.0'
@@ -159,6 +159,10 @@ def upload_t(req):
         os.system("/opt/send_t {0} {1}".format(file_name, email))        
     return HttpResponse(status=204)
 
+@ensure_csrf_cookie
+def get_csrf(req):
+    return HttpResponse(status=204)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -178,6 +182,7 @@ urlpatterns = [
 
     url(r'^manage/(?P<houseId>\d+)$', lambda req, houseId: HttpResponseRedirect("/house/{0}/manage".format(houseId))),
     url(r'^$', show_main, name='index'),
+    url(r'^get_csrf$', get_csrf),
     re_path(r'^(?P<lang>(ru|en|fr|es))$', showAnyPath, {
         'path': 'index.html',
         'document_root': settings.MEDIA_ROOT,

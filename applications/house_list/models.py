@@ -9,13 +9,16 @@ class Team(models.Model):
     def __str__(self):
         return self.name
 
+class Team_User(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, default=None)
 
 class House(models.Model):
     parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name='children')
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     teams = models.ManyToManyField(Team, related_name='in_team')
     name = models.CharField(max_length=32, unique=True)
     title = models.CharField(max_length=64, default='', blank=True)

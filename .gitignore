@@ -3,6 +3,7 @@
 /test-front
 __pycache__/
 migrations/
+codes/
 
 *.env
 *.pyc

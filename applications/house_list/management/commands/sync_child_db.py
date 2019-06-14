@@ -2,7 +2,7 @@ import uuid
 
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
-from django.db import connection
+from django.db import connection, connections
 
 from applications import add_db_to_connections
 from applications.house_list.models import House, Team
@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
     
     def batch_migrate(self, model, dest_db, src_db):        
-        add_db_to_connections(dest_db)
+        conn = add_db_to_connections(dest_db)
         add_db_to_connections(src_db)
         # get a total of the objects to be copied
         count = model.objects.using(src_db).count()
@@ -26,13 +26,11 @@ class Command(BaseCommand):
         if not count:
             print('No %s objects to copy' % model._meta.verbose_name)
             return
-        # remove from dest before copying
-        if model.objects.using(dest_db).exists():
-            model.objects.using(dest_db).all().delete()
 
-        name = model._meta.verbose_name_plural
-        if count == 1:
-            name = model._meta.verbose_name
+        with connection.cursor() as c:
+            c.execute("SET foreign_key_checks = 0;")
+            c.execute("TRUNCATE TABLE `{0}`.`{1}`;".format(conn['NAME'], model._meta.db_table))
+            c.execute("SET foreign_key_checks = 1;")
 
         items = model.objects.using(src_db).all().order_by('pk')
 
@@ -66,6 +64,8 @@ class Command(BaseCommand):
         self.batch_migrate(models.ViewItem, dest, src)
         self.batch_migrate(models.ParamItem, dest, src)
         self.batch_migrate(models.Group_Param, dest, src)
+        connections[dest].close()
+        connections[src].close()
 
     def handle(self, *args, **options):
 

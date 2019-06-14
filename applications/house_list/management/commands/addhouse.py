@@ -16,60 +16,67 @@ class Command(BaseCommand):
         parser.add_argument('--title', help='Имя русскими буквами')
         parser.add_argument('--device', help='UUID')
         parser.add_argument('--description', help='Описание')
-        parser.add_argument('--team-id', help='ID группы пользователей')
-        parser.add_argument('--team-name', help='Имя группы пользователей')
+        parser.add_argument('--team-id', nargs='+', help='ID группы пользователей')
+        parser.add_argument('--team-name', nargs='+', help='Имя группы пользователей')
         parser.add_argument('--parent-id', help='ID родительского проектa')
         parser.add_argument('--parent-name', help='Имя родительского проектa')
     
+    def get_teams(self, team_id_list, team_name_list):
+        teams = []
+        if team_id_list:
+            for team_id in team_id_list:
+                teams.append(Team.objects.get(id=int(team_id)))
+        if team_name_list:
+            for team_name in team_name_list:
+                try:
+                    teams.append(Team.objects.get(name=team_name))
+                except:
+                    print('Add team "' + team_name + '" ? [y/N]')
+                    answer = input()
+                    if answer.lower()[0] == 'y':
+                        team = Team()
+                        team.name = team_name
+                        team.save()
+                        teams.append(team)
+        return teams
+
     def handle(self, *args, **options):
+        teams = self.get_teams(options['team_id'], options['team_name'])
+        if not teams:
+            print("Ошибка: Добавьте информацию о группе пользователей")
+            exit()
+
         try:
             house = House.objects.get(name=options['name'])
         except House.DoesNotExist:
-            try:
-                if options['team_id']:
-                    team = Team.objects.get(id=options['team_id'])
-                else:
-                    team = Team.objects.get(name=options['team_name'])
-            except Team.DoesNotExist:
-                if options['team_name'] and not options['team_id']:
-                    team = Team()
-                    team.name = options['team_name']
-                    team.save()
-                    
-                    print("New team {0} added with id: {1}.".format(team.name, team.id))
-                else:
-                    print("Ошибка: Добавьте информацию о группе пользователей")
-                    exit()
-                
-            device = uuid.UUID(options['device']) if options['device'] else uuid.uuid4()
-
+            # device = uuid.UUID(options['device']) if options['device'] else uuid.uuid4()
             house = House()
             house.name = options['name']
-            house.title = options.get('title')
+            house.title = options['title']
             if not house.title:
                 house.title = house.name
             house.latin_name = house.name
             if options['description']:
                 house.description = options['description']
-            house.device = device
-            house.team = team
 
         conn = add_db_to_connections(house.name)
         
         with connection.cursor() as c:
             c.execute("CREATE SCHEMA /*!32312 IF NOT EXISTS*/ `{0}` DEFAULT CHARACTER SET utf8;".format(conn['NAME']))
             
+        is_new_proj = house.pk == None
         try:
             call_command('migrate', '--settings', 'houses.settings.prod', '--database', house.name, 'house')
             print('Database create: Ok')
 
-            if house.pk == None:
+            if is_new_proj:
                 house.save()
-                house.teams.add(team)
+
+                for team in teams:
+                    house.teams.add(team)
                 house.save()
 
                 print("New house {0} added with id: {1}.".format(house.title, house.id))
-                print("Device: {0}".format(str(device)))
 
                 if options['parent_id']:
                     parent = House.objects.get(id=options['parent_id'])
@@ -81,9 +88,10 @@ class Command(BaseCommand):
                     house.parent = parent
                     house.save()
 
-
         except Exception as e:
             print(e)
             with connection.cursor() as c:
                 c.execute("DROP DATABASE `{0}`;".format(conn['NAME']))
+            if is_new_proj and house.pk:
+                house.delete()
 

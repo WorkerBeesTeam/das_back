@@ -1,6 +1,8 @@
 import time
 import subprocess
 import json
+import os
+import git
 
 from django.conf import settings
 from django.utils import timezone
@@ -26,8 +28,6 @@ class SaveTimerViewSet(viewsets.ModelViewSet):
     serializer_class = houseSerializers.SaveTimerSerializer
     def get_queryset(self):
         conn_name = checkConnection(self.request)[1]
-        print('save_timer ' + conn_name)
-        print(houseModels.Save_Timer.objects.using(conn_name).all())
         return houseModels.Save_Timer.objects.using(conn_name).all()
         
 class ViewItemViewSet(viewsets.ModelViewSet): 
@@ -338,11 +338,13 @@ class CodeViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = self.get_queryset()
         for code in queryset:
-            if code.global_id and not code.name:
-                try:
-                    code.name = hListModels.Code.objects.get(pk=code.pk).name
-                except hListModels.Code.DoesNotExist:
-                    pass
+            if code.global_id:
+                if not code.name:
+                    try:
+                        code.name = hListModels.Code.objects.get(pk=code.pk).name
+                    except hListModels.Code.DoesNotExist:
+                        pass
+                code.text = ''
 
         data = self.serializer_class(queryset, many=True).data
         return Response(data)
@@ -362,11 +364,34 @@ class CodeViewSet(viewsets.ViewSet):
         code = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.serializer_class(code, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
 
         if code.global_id and request.data.get('text', None) != None:
             g_code = get_object_or_404(hListModels.Code, pk=code.global_id)
             g_code.text = request.data['text']
             g_code.save()
+            self.save_git(g_code.id, request.data['text'])
+        else:
+            self.save_git(code.id, request.data['text'], request.GET['id'])
 
-        serializer.save()
         return Response(serializer.data)
+
+    def save_git(self, code_id, text, proj_id=None):
+        git_path = settings.FRONTEND_ROOT + '/../codes/'
+
+        if proj_id:
+            git_path += 'proj/' + str(proj_id) + '/'
+        else:
+            git_path += 'list_code/'
+
+        os.makedirs(git_path, exist_ok=True)
+        try:
+            git_obj = git.Repo(git_path)
+        except:
+            git_obj = git.Repo.init(git_path)
+
+        git_path += str(code_id)
+        open(git_path, 'w', encoding="utf8").write(text)
+        git_obj.git.add(git_path)
+        git_obj.git.commit('-m', 'Save ' + str(code_id))
+        print('git init ok')

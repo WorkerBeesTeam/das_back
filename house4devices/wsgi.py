@@ -20,6 +20,11 @@ except ImportError:
 else:
     settings_module = process_group
 
+if not settings_module:
+    settings_module = "house4devices.settings.prod"
+
+print('Django settings module is {0}'.format(settings_module))
+
 os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 #os.environ.setdefault("DJANGO_SETTINGS_MODULE", "house4devices.settings.prod")
 

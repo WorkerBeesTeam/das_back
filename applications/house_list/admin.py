@@ -11,9 +11,14 @@ class EmployeeInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'employee'
 
+class UserTeamInline(admin.StackedInline):
+    model = models.Team_User
+    can_delete = True
+    verbose_name_plural = 'teams'
+
 # Define a new User admin
 class UserAdmin(BaseUserAdmin):
-    inlines = (EmployeeInline, )
+    inlines = (EmployeeInline,UserTeamInline )
 
 # Re-register UserAdmin
 admin.site.unregister(User)
