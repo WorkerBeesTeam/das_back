@@ -129,6 +129,8 @@ import datetime
 JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER':
         'house4devices.auth.jwt_response_payload_handler',
+    'JWT_PAYLOAD_HANDLER':
+        'house4devices.auth.jwt_payload_handler',
     'JWT_ALLOW_REFRESH': True,
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
 }

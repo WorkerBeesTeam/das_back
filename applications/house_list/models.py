@@ -15,6 +15,7 @@ class Team_User(models.Model):
 
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    daily_report = models.IntegerField(blank=True, null=True, default=None)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, default=None)
 
 class House(models.Model):
