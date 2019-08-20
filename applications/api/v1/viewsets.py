@@ -96,24 +96,24 @@ class FileUploadView(views.APIView):
             print('Failed upload device item file')
         return Response(status=204)
 
-class EventLogViewSet(viewsets.ModelViewSet): 
+class Log_Event_ViewSet(viewsets.ModelViewSet): 
 #    queryset = houseModels.EventLog.objects.using(conn_name).all()
-    serializer_class = houseSerializers.EventLogSerializer
+    serializer_class = houseSerializers.Log_Event_Serializer
     filter_backends = (filters.SearchFilter,filters.OrderingFilter,)
-    search_fields = ('msg', 'who')
+    search_fields = ('text', 'category')
     permission_classes = (AllowAny,)
     def get_queryset(self):
         conn_name = checkConnection(self.request)[1]
 
         try:
-            pk_from = int(self.request.GET.get('pk_from'))
-            pk_to = int(self.request.GET.get('pk_to'))
+            ts_from = int(self.request.GET.get('ts_from'))
+            ts_to = int(self.request.GET.get('ts_to'))
             if pk_from != 0 and pk_to != 0:
-                return houseModels.EventLog.objects.using(conn_name).filter(id__range=[pk_from,pk_to])
+                return houseModels.Log_Event.objects.using(conn_name).filter(timestamp_msecs__range=[ts_from,ts_to])
         except:
             pass
 
-        return houseModels.EventLog.objects.using(conn_name).all()
+        return houseModels.Log_Event.objects.using(conn_name).all()
 
 # ------------------- Logs -------------------------
 class ItemTypeFilter(rf_filters.FilterSet):
@@ -143,8 +143,8 @@ class LogDateFilter(django_filters.FilterSet):
         model = houseModels.Logs
         fields = ['date', 'item']
 
-class LogViewSet(viewsets.ModelViewSet): 
-    serializer_class = houseSerializers.LogSerializer
+class Log_Data_ViewSet(viewsets.ModelViewSet): 
+    serializer_class = houseSerializers.Log_Data_Serializer
 #    filter_backends = (filters.OrderingFilter,)
 #    filter_backends = (rf_filters.backends.DjangoFilterBackend,)
 #    filter_class = LogDateFilter
@@ -155,8 +155,8 @@ class LogViewSet(viewsets.ModelViewSet):
 #        return houseModels.Logs.objects.using('baltika0').all()
         conn_name = checkConnection(self.request)[1]
 
-        date_from = self.request.GET.get('date_from', '')
-        date_to = self.request.GET.get('date_to', '')
+        ts_from = self.request.GET.get('ts_from', '')
+        ts_to = self.request.GET.get('ts_to', '')
         items_string = self.request.GET.get('items', None)
         if items_string:
             item_strings = items_string.split(',')
@@ -164,7 +164,7 @@ class LogViewSet(viewsets.ModelViewSet):
             for item in item_strings:
                 items.append(int(item))
             if items:
-                return houseModels.Logs.objects.using(conn_name).filter(item_id__in=items, date__range=[date_from, date_to]).order_by('date')
+                return houseModels.Log_Data.objects.using(conn_name).filter(item_id__in=items, timestamp_msecs__range=[ts_from, ts_to]).order_by('timestamp_msecs')
 
         itemtypes_string = self.request.GET.get('itemtypes', None)
         if itemtypes_string:
@@ -173,10 +173,10 @@ class LogViewSet(viewsets.ModelViewSet):
             for item in item_strings:
                 items.append(int(item))
             if items:
-                return houseModels.Logs.objects.using(conn_name).filter(item__type_id__in=items, date__range=[date_from, date_to]).order_by('date')
+                return houseModels.Log_Data.objects.using(conn_name).filter(item__type_id__in=items, timestamp_msecs__range=[ts_from, ts_to]).order_by('timestamp_msecs')
 
         group_type = int(self.request.GET.get('group_type', 0))
-        return houseModels.Logs.objects.using(conn_name).filter(item__type__groupType_id=group_type, date__range=[date_from, date_to]).order_by('date')
+        return houseModels.Log_Data.objects.using(conn_name).filter(item__type__groupType_id=group_type, timestamp_msecs__range=[ts_from, ts_to]).order_by('timestamp_msecs')
 # ------------------- END Logs -------------------------
 
 class HouseDetailViewSet(viewsets.ViewSet):

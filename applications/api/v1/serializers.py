@@ -172,12 +172,12 @@ class DeviceSerializer(serializers.ModelSerializer):
         model = houseModels.Device
         fields = ('id', 'name', 'extra', 'checker_id', 'check_interval', 'items')
 
-class EventLogSerializer(serializers.ModelSerializer):
+class Log_Event_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.EventLog
+        model = houseModels.Log_Event
         fields = '__all__'
 
-class LogSerializer(serializers.ModelSerializer):
+class Log_Data_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
     raw_value = serializers.SerializerMethodField()
 
@@ -188,8 +188,8 @@ class LogSerializer(serializers.ModelSerializer):
         return normalize_value(obj.raw_value)
 
     class Meta:
-        model = houseModels.Logs
-        fields = ('date', 'item_id', 'raw_value', 'value')
+        model = houseModels.Log_Data
+        fields = ('timestamp_msecs', 'item_id', 'raw_value', 'value')
 
 class CodeSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
