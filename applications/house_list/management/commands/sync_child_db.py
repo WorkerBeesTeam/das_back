@@ -46,6 +46,7 @@ class Command(BaseCommand):
             self.batch_migrate(m2m_model, dest_db, src_db)
 
     def sync_data(self, dest, src):
+        print('sync {0} to {1}'.format(src, dest))
         self.batch_migrate(models.Codes, dest, src)
         self.batch_migrate(models.SignType, dest, src)
         self.batch_migrate(models.Translation, dest, src)
