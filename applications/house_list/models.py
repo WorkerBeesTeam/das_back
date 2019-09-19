@@ -18,9 +18,22 @@ class Employee(models.Model):
     daily_report = models.IntegerField(blank=True, null=True, default=None)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, default=None)
 
+class City(models.Model):
+    name = models.CharField(max_length=64)
+    def __str__(self):
+        return self.name
+
+class Company(models.Model):
+    name = models.CharField(max_length=64)
+    def __str__(self):
+        return self.name
+
 class House(models.Model):
     parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name='children')
     teams = models.ManyToManyField(Team, related_name='in_team')
+    city = models.ForeignKey(City, blank=True, null=True, default=None, on_delete=models.SET_NULL)
+    company = models.ForeignKey(Company, blank=True, null=True, default=None, on_delete=models.SET_NULL)
+    address = models.CharField(max_length=64, default='', blank=True)
     name = models.CharField(max_length=32, unique=True)
     title = models.CharField(max_length=64, default='', blank=True)
     latin_name = models.CharField(max_length=32, unique=True)

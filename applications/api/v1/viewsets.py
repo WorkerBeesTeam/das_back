@@ -59,6 +59,15 @@ class TeamViewSet(viewsets.ViewSet):
 
         return Response({'count': len(result), 'results': result})
 
+
+class CityViewSet(viewsets.ModelViewSet):
+    queryset = hListModels.City.objects.all()
+    serializer_class = houseSerializers.CitySerializer
+
+class CompanyViewSet(viewsets.ModelViewSet):
+    queryset = hListModels.Company.objects.all()
+    serializer_class = houseSerializers.CompanySerializer
+
 class HouseViewSet(viewsets.ModelViewSet): 
 #    queryset = hListModels.House.objects.using(conn_name).all().order_by('-lastUsage')
 #    filter_backends = (filters.DjangoFilterBackend,)

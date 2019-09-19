@@ -3,6 +3,16 @@ from rest_framework import serializers
 from applications.house import models as houseModels
 from applications.house_list import models as hListModels
 
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = hListModels.City
+        fields = ['id', 'name']
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = hListModels.Company
+        fields = ['id', 'name']
+
 class SaveTimerSerializer(serializers.ModelSerializer):
     class Meta:
         model = houseModels.Save_Timer
@@ -22,7 +32,7 @@ class HouseSerializer(serializers.ModelSerializer):
 #    device = UUIDField(format='hex_verbose')
     class Meta:
         model = hListModels.House
-        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description')
+        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address')
         read_only_fields = ('id', 'name', 'device', 'lastUsage')
 
 class ParamItemSerializer(serializers.ModelSerializer):

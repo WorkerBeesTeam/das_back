@@ -4,6 +4,8 @@ from rest_framework import routers
 from applications.api.v1 import viewsets
 
 api_router = routers.SimpleRouter()
+api_router.register('city', viewsets.CityViewSet, base_name='city')
+api_router.register('company', viewsets.CompanyViewSet, base_name='company')
 api_router.register('team', viewsets.TeamViewSet, base_name='team')
 api_router.register('house', viewsets.HouseViewSet, base_name='house')
 api_router.register('log_event', viewsets.Log_Event_ViewSet, base_name='log_event')
