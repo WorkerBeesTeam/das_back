@@ -40,19 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
 
     # Django Packages
     'django_filters',
     'rest_framework',
     #'rest_framework_filters',
-    'telegrambot',
 
     'applications.house',
     'applications.house_list'
 ]
-
-SITE_ID=1
 
 ROOT_URLCONF = 'house4devices.urls'
 
@@ -134,8 +130,5 @@ JWT_AUTH = {
     'JWT_ALLOW_REFRESH': True,
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
 }
-
-TELEGRAM_BOT_HANDLERS_CONF = "house4devices.bot_handlers"
-TELEGRAM_BOT_TOKEN_EXPIRATION = 72 # hours before a token expires
 
 CSRF_COOKIE_SECURE=False

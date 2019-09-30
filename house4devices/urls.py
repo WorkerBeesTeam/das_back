@@ -166,8 +166,6 @@ def get_csrf(req):
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    url(r'^telegrambot/', include(('telegrambot.urls', 'telegrambot'))),
-
     # API:V1
     url(r'^api/v1/', include(api_urlpatterns)),
     url(r'^api/token/auth/', obtain_jwt_token),

@@ -34,7 +34,7 @@ class HouseSerializer(serializers.ModelSerializer):
 #    city = CitySerializer(many=False,read_only=False)
     class Meta:
         model = hListModels.House
-        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address', 'city_id', 'company_id', 'city', 'company')
+        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address', 'city', 'company')
         read_only_fields = ('id', 'name', 'device', 'lastUsage')
 
 class ParamItemSerializer(serializers.ModelSerializer):
