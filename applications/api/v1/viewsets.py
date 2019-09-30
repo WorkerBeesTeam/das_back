@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.core import serializers
 import django_filters
+from django_filters.rest_framework.backends import DjangoFilterBackend
 
 #from django_filters import rest_framework as filters
 from rest_framework import filters, viewsets, views
@@ -68,13 +69,30 @@ class CompanyViewSet(viewsets.ModelViewSet):
     queryset = hListModels.Company.objects.all()
     serializer_class = houseSerializers.CompanySerializer
 
+class HouseFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(name='name', lookup_expr='icontains')
+    title = django_filters.CharFilter(name='title', lookup_expr='icontains')
+    description = django_filters.CharFilter(name='description', lookup_expr='icontains')
+    address = django_filters.CharFilter(name='address', lookup_expr='icontains')
+    city = django_filters.CharFilter(name='city__name', lookup_expr='icontains')
+    company = django_filters.CharFilter(name='company__name', lookup_expr='icontains')
+    city__id = django_filters.NumberFilter()
+    company__id = django_filters.NumberFilter()
+
+    class Meta:
+        model = hListModels.House
+        fields = ['name', 'title', 'description','address','city','company','city__id','company__id']
+
 class HouseViewSet(viewsets.ModelViewSet): 
 #    queryset = hListModels.House.objects.using(conn_name).all().order_by('-lastUsage')
 #    filter_backends = (filters.DjangoFilterBackend,)
 #    filter_fields = ('name', 'name')
     serializer_class = houseSerializers.HouseSerializer
-    filter_backends = (filters.SearchFilter,filters.OrderingFilter)
-    search_fields = ('name', 'title', 'description')
+    #filter_backends = (filters.SearchFilter,filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
+    filter_class = HouseFilter
+    search_fields = ('name', 'title', 'description', 'city__name', 'company__name')
+#    filter_fields = ('name', 'title', 'description', 'city__name', 'company__name', 'city_id', 'company_id')
 
     lookup_field = 'name'
     def get_queryset(self):

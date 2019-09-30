@@ -30,9 +30,11 @@ class ViewItemSerializer(serializers.ModelSerializer):
 
 class HouseSerializer(serializers.ModelSerializer):
 #    device = UUIDField(format='hex_verbose')
+#    company = CompanySerializer(many=False,read_only=False)
+#    city = CitySerializer(many=False,read_only=False)
     class Meta:
         model = hListModels.House
-        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address')
+        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address', 'city_id', 'company_id', 'city', 'company')
         read_only_fields = ('id', 'name', 'device', 'lastUsage')
 
 class ParamItemSerializer(serializers.ModelSerializer):
