@@ -19,8 +19,8 @@ if not FRONTEND_ROOT.startswith('/'):
 
 ALLOWED_HOSTS = ['*']
 
-TIME_ZONE = 'Asia/Novosibirsk'
-USE_TZ = True
+#TIME_ZONE = 'Asia/Novosibirsk'
+#USE_TZ = True
 
 #USE_I18N = True
 #USE_L10N = True
