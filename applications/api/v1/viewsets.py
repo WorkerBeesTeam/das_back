@@ -420,5 +420,5 @@ class CodeViewSet(viewsets.ViewSet):
         git_path += str(code_id)
         open(git_path, 'w', encoding="utf8").write(text)
         git_obj.git.add(git_path)
-        git_obj.git.commit('-m', 'Save ' + str(code_id))
+        git_obj.git.commit('-m', 'Save_' + str(code_id))
         print('git init ok')
