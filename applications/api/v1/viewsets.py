@@ -110,17 +110,23 @@ class FileUploadView(views.APIView):
         devitem_id = req.GET.get('item_id')
         input_file = req.FILES['fileKey']
         file_name = input_file.name
-        file_path = '/var/tmp/dai_item_file_' + str(time.time())
+#        file_path = '/var/tmp/dai_item_file_' + str(time.time())
+        file_path = '/opt/firmware/dai_item_file_' + str(time.time())
         file_path += '.dat'
         with open(file_path, 'wb+') as destination:
             for chunk in input_file.chunks():
                 destination.write(chunk)
         
-        args = ['/usr/bin/sudo', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, '--send_file_name', file_name]
-        ret = subprocess.call(args)
-        if ret != 0:
-            print(ret)
-            print('Failed upload device item file')
+        import dbus
+        obj = dbus.SystemBus().get_object('ru.deviceaccess.Dai.Server', '/')
+        obj.write_item_file(project_id, user_id, devitem_id, file_name, file_path, dbus_interface='ru.deviceaccess.Dai.Server.iface')
+
+        #print(subprocess.run(['/usr/bin/sudo', '/bin/sh', '-c', '/opt/test.sh'], capture_output=True))
+        #args = ['/usr/bin/sudo', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, '--send_file_name', file_name]
+        #ret = subprocess.run(args, capture_output=True)
+        #if ret.returncode != 0:
+        #    print(ret)
+        #    print('Failed upload device item file')
         return Response(status=204)
 
 class Log_Event_ViewSet(viewsets.ModelViewSet): 
