@@ -20,7 +20,7 @@ class Employee(models.Model):
 
 class City(models.Model):
     name = models.CharField(max_length=64)
-    timezone = models.IntegerField(default=0)
+    timezone = models.CharField(max_length=32, default='', blank=True)
     def __str__(self):
         return self.name
 
