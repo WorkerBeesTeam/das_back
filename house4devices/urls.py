@@ -91,7 +91,7 @@ def check_version(req):
         cur_ver = '?'
     print("Check version: {0} from: {1} {2} current: {3}".format(client_ver, name, get_client_ip(req), cur_ver))
 
-    if not name[:2] == 'B0' and not name[:2] == 'B1' and not name[:2] == 'B2'  and not name[:2] == 'C0' and name != 'sochi_0519' and not name[:4] == '106_' and not name[:4] == '107_':
+    if not name[:2] == 'B0' and not name[:2] == 'B1' and not name[:2] == 'B2'  and not name[:2] == 'C0' and name != 'sochi_0519' and not name[:4] == '106_' and not name[:4] == '107_' and not name[:2] == 'N0':
         doc['version'] = client_ver
     elif not client_ver or client_ver == '?':
         doc['version'] = '0.0.0'

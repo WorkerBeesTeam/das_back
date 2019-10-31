@@ -14,6 +14,7 @@ class Team_User(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
 class Employee(models.Model):
+    need_to_change_password = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     daily_report = models.IntegerField(blank=True, null=True, default=None)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, default=None)
