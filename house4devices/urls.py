@@ -175,6 +175,8 @@ urlpatterns = [
     url(r'^check_version', check_version),
     url(r'^update_file', update_file),
 
+    url(r'^export/excel_pouring', views.export_excel_pouring),
+    url(r'^export/excel_idle', views.export_excel_idle),
     url(r'^export/excel', views.export_excel),
     url(r'^upload_t', upload_t),
 

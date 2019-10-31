@@ -3,6 +3,19 @@ from rest_framework import serializers
 from applications.house import models as houseModels
 from applications.house_list import models as hListModels
 
+from django.contrib.auth.password_validation import validate_password
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializer for password change endpoint.
+    """
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
 class CitySerializer(serializers.ModelSerializer):
     class Meta:
         model = hListModels.City
@@ -188,6 +201,51 @@ class Log_Event_Serializer(serializers.ModelSerializer):
     class Meta:
         model = houseModels.Log_Event
         fields = '__all__'
+
+class LDS2_Type(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.ItemType
+        fields = ('id','title')
+
+class LDS2_Section(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.Section
+        fields = ('id','name')
+
+class LDS2_GroupType(serializers.ModelSerializer):
+    class Meta:
+        model = houseModels.GroupType
+        fields = ('id','title')
+
+class LDS2_Group(serializers.ModelSerializer):
+    section = LDS2_Section()
+    type = LDS2_GroupType()
+    class Meta:
+        model = houseModels.Group
+        fields = ('id','title','section','type')
+
+class LDS2_Item(serializers.ModelSerializer):
+    type = LDS2_Type()
+    group = LDS2_Group()
+    class Meta:
+        model = houseModels.DeviceItem
+        fields = ('id','name','type','group')
+
+class Log_Data_Serializer_2(serializers.ModelSerializer):
+    value = serializers.SerializerMethodField()
+    raw_value = serializers.SerializerMethodField()
+
+    def get_value(self, obj):
+        return normalize_value(obj.value)
+    
+    def get_raw_value(self, obj):
+        return normalize_value(obj.raw_value)
+
+    item = LDS2_Item(many=False)
+    class Meta:
+        model = houseModels.Log_Data
+        fields = ('timestamp_msecs', 'item', 'raw_value', 'value')
+
 
 class Log_Data_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
