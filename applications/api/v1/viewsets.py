@@ -187,6 +187,9 @@ class LDVS2_Filter(django_filters.FilterSet):
     #company = django_filters.CharFilter(name='company__name', lookup_expr='icontains')
     #city__id = django_filters.NumberFilter()
     #company__id = django_filters.NumberFilter()
+    min_ts = django_filters.NumberFilter(name="timestamp_msecs", lookup_expr='gte')
+    max_ts = django_filters.NumberFilter(name="timestamp_msecs", lookup_expr='lte')
+    timestamp_msecs = django_filters.NumberFilter()
     item__type__title = django_filters.NumberFilter()
     item__name = django_filters.NumberFilter()
     item__group__title = django_filters.NumberFilter()
@@ -196,13 +199,14 @@ class LDVS2_Filter(django_filters.FilterSet):
     class Meta:
         model = houseModels.Log_Data
         #fields = ['name', 'title', 'description','address','city','company','city__id','company__id']
-        fields = ['item__type__title', 'item__name', 'item__group__title', 'item__group__type__title', 'item__group__section__name']
+        fields = ['timestamp_msecs', 'min_ts', 'max_ts', 'item__type__title', 'item__name', 'item__group__title', 'item__group__type__title', 'item__group__section__name']
 
 class Log_Data_ViewSet_2(viewsets.ModelViewSet): 
 #    queryset = houseModels.EventLog.objects.using(conn_name).all()
     serializer_class = houseSerializers.Log_Data_Serializer_2
     filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
     filter_class = LDVS2_Filter
+    filterset_class = LDVS2_Filter
     search_fields = ('item__type__title', 'item__name', 'item__group__title', 'item__group__type__title', 'item__group__section__name')
     permission_classes = (AllowAny,)
     def get_queryset(self):
