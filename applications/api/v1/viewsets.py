@@ -43,15 +43,15 @@ class ChangePasswordView(generics.UpdateAPIView):
         if serializer.is_valid():
             # Check old password
             if not self.object.check_password(serializer.data.get("old_password")):
-                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
             if serializer.data.get("new_password") == serializer.data.get("old_password"):
-                return Response("New password is the same of old_password", status=status.HTTP_400_BAD_REQUEST)
+                return Response("New password is the same of old_password", status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
             # set_password also hashes the password that the user will get
             self.object.set_password(serializer.data.get("new_password"))
             self.object.save()
             return Response("Success.", status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
 
 class SaveTimerViewSet(viewsets.ModelViewSet): 
     serializer_class = houseSerializers.SaveTimerSerializer
