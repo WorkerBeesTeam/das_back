@@ -13,7 +13,7 @@ import django_filters
 from django_filters.rest_framework.backends import DjangoFilterBackend
 
 #from django_filters import rest_framework as filters
-from rest_framework import filters, viewsets, views
+from rest_framework import status, filters, viewsets, views, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser
@@ -24,6 +24,34 @@ from applications.house import models as houseModels
 from applications.house_list import models as hListModels
 from applications.house_list.tool import checkConnection
 from applications.api.v1 import serializers as houseSerializers
+
+class ChangePasswordView(generics.UpdateAPIView):
+    """
+    An endpoint for changing password.
+    """
+    serializer_class = houseSerializers.ChangePasswordSerializer
+    model = get_user_model()
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
+            if serializer.data.get("new_password") == serializer.data.get("old_password"):
+                return Response("New password is the same of old_password", status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
+            # set_password also hashes the password that the user will get
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+            return Response("Success.", status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
 
 class SaveTimerViewSet(viewsets.ModelViewSet): 
     serializer_class = houseSerializers.SaveTimerSerializer
@@ -147,6 +175,53 @@ class Log_Event_ViewSet(viewsets.ModelViewSet):
             pass
 
         return houseModels.Log_Event.objects.using(conn_name).all()
+
+# ---------------------- Log Data 2
+
+class LDVS2_Filter(django_filters.FilterSet):
+    #name = django_filters.CharFilter(name='name', lookup_expr='icontains')
+    #title = django_filters.CharFilter(name='title', lookup_expr='icontains')
+    #description = django_filters.CharFilter(name='description', lookup_expr='icontains')
+    #address = django_filters.CharFilter(name='address', lookup_expr='icontains')
+    #city = django_filters.CharFilter(name='city__name', lookup_expr='icontains')
+    #company = django_filters.CharFilter(name='company__name', lookup_expr='icontains')
+    #city__id = django_filters.NumberFilter()
+    #company__id = django_filters.NumberFilter()
+    min_ts = django_filters.NumberFilter(name="timestamp_msecs", lookup_expr='gte')
+    max_ts = django_filters.NumberFilter(name="timestamp_msecs", lookup_expr='lte')
+    timestamp_msecs = django_filters.NumberFilter()
+    item__type__title = django_filters.NumberFilter()
+    item__name = django_filters.NumberFilter()
+    item__group__title = django_filters.NumberFilter()
+    item__group__type__title = django_filters.NumberFilter()
+    item__group__section__name = django_filters.NumberFilter()
+
+    class Meta:
+        model = houseModels.Log_Data
+        #fields = ['name', 'title', 'description','address','city','company','city__id','company__id']
+        fields = ['timestamp_msecs', 'min_ts', 'max_ts', 'item__type__title', 'item__name', 'item__group__title', 'item__group__type__title', 'item__group__section__name']
+
+class Log_Data_ViewSet_2(viewsets.ModelViewSet): 
+#    queryset = houseModels.EventLog.objects.using(conn_name).all()
+    serializer_class = houseSerializers.Log_Data_Serializer_2
+    filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
+    filter_class = LDVS2_Filter
+    filterset_class = LDVS2_Filter
+    search_fields = ('item__type__title', 'item__name', 'item__group__title', 'item__group__type__title', 'item__group__section__name')
+    permission_classes = (AllowAny,)
+    def get_queryset(self):
+        #conn_name = checkConnection(self.request, 9)[1]
+        conn_name = checkConnection(self.request)[1]
+
+        try:
+            ts_from = int(self.request.GET.get('ts_from'))
+            ts_to = int(self.request.GET.get('ts_to'))
+            if pk_from != 0 and pk_to != 0:
+                return houseModels.Log_Data.objects.using(conn_name).filter(timestamp_msecs__range=[ts_from,ts_to])
+        except:
+            pass
+
+        return houseModels.Log_Data.objects.using(conn_name).all()
 
 # ------------------- Logs -------------------------
 class ItemTypeFilter(rf_filters.FilterSet):

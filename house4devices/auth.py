@@ -30,6 +30,7 @@ def jwt_response_payload_handler(token, user=None, request=None):
     data = UserSerializer(user, context={'request': request}).data
     data['token'] = token
     if user:
+        data['need_to_change_password'] = user.employee.need_to_change_password
         permissions = None
         if user.is_superuser:
             permissions = Permission.objects.all()

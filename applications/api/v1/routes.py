@@ -10,6 +10,7 @@ api_router.register('team', viewsets.TeamViewSet, base_name='team')
 api_router.register('house', viewsets.HouseViewSet, base_name='house')
 api_router.register('log_event', viewsets.Log_Event_ViewSet, base_name='log_event')
 api_router.register('log_data', viewsets.Log_Data_ViewSet, base_name='log_data')
+api_router.register('log_data_2', viewsets.Log_Data_ViewSet_2, base_name='log_data_2')
 api_router.register('detail', viewsets.HouseDetailViewSet, base_name='detail')
 #api_router.register('users', viewsets.UserViewSet)
 api_router.register('code', viewsets.CodeViewSet, base_name='code')
@@ -19,6 +20,7 @@ api_router.register('savetimer', viewsets.SaveTimerViewSet, base_name='savetimer
 
 urlpatterns = [
     url(r'^write_item_file/$', viewsets.FileUploadView.as_view()),
+    url(r'change_password/$', viewsets.ChangePasswordView.as_view()),
 ]
 
 urlpatterns += api_router.urls
