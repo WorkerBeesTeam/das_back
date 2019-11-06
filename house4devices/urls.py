@@ -72,6 +72,14 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+def check_update_accepted(name):
+    with open('/opt/dai/web/update_accepted.list', 'r') as f:
+        for line in f:
+            pattern = line[:-1]
+            if pattern and re.match(pattern, name):
+                return True
+    return False
+
 def check_version(req):
     ver_file = open(settings.MEDIA_ROOT + '/version.json', 'rb')
     ver = ver_file.read()
@@ -91,7 +99,7 @@ def check_version(req):
         cur_ver = '?'
     print("Check version: {0} from: {1} {2} current: {3}".format(client_ver, name, get_client_ip(req), cur_ver))
 
-    if not name[:2] == 'B0' and not name[:2] == 'B1' and not name[:2] == 'B2'  and not name[:2] == 'C0' and name != 'sochi_0519' and not name[:4] == '106_' and not name[:4] == '107_' and not name[:2] == 'N0':
+    if not check_update_accepted(name):
         doc['version'] = client_ver
     elif not client_ver or client_ver == '?':
         doc['version'] = '0.0.0'
