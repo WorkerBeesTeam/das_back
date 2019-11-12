@@ -25,6 +25,25 @@ from applications.house_list import models as hListModels
 from applications.house_list.tool import checkConnection
 from applications.api.v1 import serializers as houseSerializers
 
+class ChangeUserDetailsView(generics.UpdateAPIView):
+    """
+    An endpoint for changing user details
+    """
+    serializer_class = houseSerializers.ChangePasswordSerializer
+    model = get_user_model()
+    permission_classes = ()
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.first_name = request.data.get("first_name")
+        self.object.last_name = request.data.get("last_name")
+        #self.object.email = request.data.get("email")
+        self.object.save()
+        return Response('Success.', status=status.HTTP_200_OK)
+
 class ChangePasswordView(generics.UpdateAPIView):
     """
     An endpoint for changing password.
