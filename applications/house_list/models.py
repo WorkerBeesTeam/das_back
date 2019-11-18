@@ -82,8 +82,8 @@ class Brand(models.Model):
     ingredients = models.TextField(null=False)
     more_details = models.TextField(null=True, default=None)
     storage_condition = models.CharField(max_length=100)
-    producer_id = models.ForeignKey(Producer, null=True, on_delete=models.SET_NULL)
-    distributor_id = models.ForeignKey(Distributor, null=True, on_delete=models.SET_NULL)
+    producer = models.ForeignKey(Producer, null=True, on_delete=models.SET_NULL)
+    distributor = models.ForeignKey(Distributor, null=True, on_delete=models.SET_NULL)
     barcode = models.CharField(max_length=100)
     active = models.BooleanField(null=False, default=1)
     def __str__(self):
