@@ -286,6 +286,5 @@ class Brand_Serializer(serializers.ModelSerializer):
     distributor = Distributor_Serializer(required=True)
     class Meta:
         model = hListModels.Brand
-        #fields = ('id', 'name', 'alc', 'ingredients', 'more_details', 'storage_condition', 'producer', 'distributor', 'barcode', 'active')
         fields = '__all__'
 
