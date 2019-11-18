@@ -270,3 +270,22 @@ class CodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = houseModels.Codes
         fields = ('id', 'name', 'text', 'global_id')
+
+class Distributor_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = hListModels.Distributor
+        fields = '__all__'
+
+class Producer_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = hListModels.Producer
+        fields = '__all__'
+
+class Brand_Serializer(serializers.ModelSerializer):
+    producer = Producer_Serializer(required=True)
+    distributor = Distributor_Serializer(required=True)
+    class Meta:
+        model = hListModels.Brand
+        #fields = ('id', 'name', 'alc', 'ingredients', 'more_details', 'storage_condition', 'producer', 'distributor', 'barcode', 'active')
+        fields = '__all__'
+

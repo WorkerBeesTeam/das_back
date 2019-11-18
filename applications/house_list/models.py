@@ -64,3 +64,28 @@ class TelegramSubscriber(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     chat_id = models.IntegerField()
 
+class Distributor(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    def __str__(self):
+        return self.name
+
+class Producer(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    def __str__(self):
+        return self.name
+
+class Brand(models.Model):
+    name = models.CharField(max_length=100)
+    alc = models.CharField(max_length=10)
+    ingredients = models.TextField(null=False)
+    more_details = models.TextField(null=True, default=None)
+    storage_condition = models.CharField(max_length=100)
+    producer_id = models.ForeignKey(Producer, null=True, on_delete=models.SET_NULL)
+    distributor_id = models.ForeignKey(Distributor, null=True, on_delete=models.SET_NULL)
+    barcode = models.CharField(max_length=100)
+    active = models.BooleanField(null=False, default=1)
+    def __str__(self):
+        return self.name
+
