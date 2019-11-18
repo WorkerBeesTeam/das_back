@@ -28,4 +28,7 @@ admin.site.register(models.Team)
 admin.site.register(models.House)
 admin.site.register(models.City)
 admin.site.register(models.Company)
+admin.site.register(models.Producer)
+admin.site.register(models.Distributor)
+admin.site.register(models.Brand)
 
