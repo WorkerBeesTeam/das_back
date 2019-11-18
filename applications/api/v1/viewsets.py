@@ -15,7 +15,7 @@ from django_filters.rest_framework.backends import DjangoFilterBackend
 #from django_filters import rest_framework as filters
 from rest_framework import status, filters, viewsets, views, generics
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser
 import rest_framework_filters as rf_filters
 
@@ -528,6 +528,17 @@ class CodeViewSet(viewsets.ViewSet):
         print('git init ok')
 
 
-#class BrandViewSet:
-#    permission_classes = (IsAuthenticatedOrReadOnly,)
+class ProducerViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = hListModels.Producer.objects.all()
+    serializer_class = houseSerializers.Producer_Serializer
 
+class DistributorViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = hListModels.Distributor.objects.all()
+    serializer_class = houseSerializers.Distributor_Serializer
+
+class BrandViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = hListModels.Brand.objects.all()
+    serializer_class = houseSerializers.Brand_Serializer
