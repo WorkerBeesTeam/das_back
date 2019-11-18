@@ -21,6 +21,7 @@ api_router.register('savetimer', viewsets.SaveTimerViewSet, base_name='savetimer
 urlpatterns = [
     url(r'^write_item_file/$', viewsets.FileUploadView.as_view()),
     url(r'change_password/$', viewsets.ChangePasswordView.as_view()),
+    url(r'change_user_details/$', viewsets.ChangeUserDetailsView.as_view()),
 ]
 
 urlpatterns += api_router.urls

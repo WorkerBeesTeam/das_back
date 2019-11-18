@@ -191,11 +191,11 @@ urlpatterns = [
     url(r'^manage/(?P<houseId>\d+)$', lambda req, houseId: HttpResponseRedirect("/house/{0}/manage".format(houseId))),
     url(r'^$', show_main, name='index'),
     url(r'^get_csrf$', get_csrf),
-    re_path(r'^(?P<lang>(ru|en|fr|es))$', showAnyPath, {
+    re_path(r'^(?P<lang>(ru|en|fr|es|mn))$', showAnyPath, {
         'path': 'index.html',
         'document_root': settings.MEDIA_ROOT,
     }),
-    re_path(r'^(?P<lang>(ru|en|fr|es))/(?P<path>(?!api).*)$', showAnyPath, {
+    re_path(r'^(?P<lang>(ru|en|fr|es|mn))/(?P<path>(?!api).*)$', showAnyPath, {
         'document_root': settings.MEDIA_ROOT,
     }),
     re_path(r'^(?P<path>(?!api).*)$', showAnyPath, {
