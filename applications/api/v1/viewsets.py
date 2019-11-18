@@ -529,12 +529,12 @@ class CodeViewSet(viewsets.ViewSet):
 
 
 class ProducerViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
     queryset = hListModels.Producer.objects.all()
     serializer_class = houseSerializers.Producer_Serializer
 
 class DistributorViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
     queryset = hListModels.Distributor.objects.all()
     serializer_class = houseSerializers.Distributor_Serializer
 
