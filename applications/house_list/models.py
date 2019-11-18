@@ -82,6 +82,7 @@ class Brand(models.Model):
     ingredients = models.TextField(null=False)
     more_details = models.TextField(null=True, default=None)
     storage_condition = models.CharField(max_length=100)
+    pressure = models.FloatField(null=False, default=0.0)
     producer = models.ForeignKey(Producer, null=True, on_delete=models.SET_NULL)
     distributor = models.ForeignKey(Distributor, null=True, on_delete=models.SET_NULL)
     barcode = models.CharField(max_length=100)
