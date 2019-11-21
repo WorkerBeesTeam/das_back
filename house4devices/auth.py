@@ -31,6 +31,7 @@ def jwt_response_payload_handler(token, user=None, request=None):
     data['token'] = token
     if user:
         data['need_to_change_password'] = user.employee.need_to_change_password
+        data['phone_number'] = user.employee.phone_number
         permissions = None
         if user.is_superuser:
             permissions = Permission.objects.all()
