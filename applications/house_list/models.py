@@ -88,6 +88,12 @@ class Brand(models.Model):
     distributor = models.ForeignKey(Distributor, null=True, on_delete=models.SET_NULL)
     barcode = models.CharField(max_length=100)
     active = models.BooleanField(null=False, default=1)
+
+    class Meta:
+        permissions = (
+            ( "can_change_brand_bind", "Can change brand bind" ), # deprecated
+        )
+
     def __str__(self):
         return self.name
 

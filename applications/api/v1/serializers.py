@@ -244,7 +244,7 @@ class Log_Data_Serializer_2(serializers.ModelSerializer):
     item = LDS2_Item(many=False)
     class Meta:
         model = houseModels.Log_Data
-        fields = ('timestamp_msecs', 'item', 'raw_value', 'value')
+        fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
 
 class Log_Data_Serializer(serializers.ModelSerializer):
