@@ -539,6 +539,11 @@ class DistributorViewSet(viewsets.ModelViewSet):
     queryset = hListModels.Distributor.objects.all()
     serializer_class = houseSerializers.Distributor_Serializer
 
+class Brand2ViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = hListModels.Brand.objects.all()
+    serializer_class = houseSerializers.Brand2_Serializer
+
 class BrandViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = hListModels.Brand.objects.all()

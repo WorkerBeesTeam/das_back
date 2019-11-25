@@ -20,6 +20,7 @@ api_router.register('savetimer', viewsets.SaveTimerViewSet, base_name='savetimer
 api_router.register('producer', viewsets.ProducerViewSet, base_name='producer')
 api_router.register('distributor', viewsets.DistributorViewSet, base_name='distributor')
 api_router.register('brand', viewsets.BrandViewSet, base_name='brand')
+api_router.register('brand2', viewsets.Brand2ViewSet, base_name='brand2')
 
 urlpatterns = [
     url(r'^write_item_file/$', viewsets.FileUploadView.as_view()),

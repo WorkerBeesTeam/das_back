@@ -282,9 +282,39 @@ class Producer_Serializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class Brand_Serializer(serializers.ModelSerializer):
-    producer = Producer_Serializer(required=True)
-    distributor = Distributor_Serializer(required=True)
+    producer = Producer_Serializer()
+    distributor = Distributor_Serializer()
     class Meta:
         model = hListModels.Brand
         fields = '__all__'
 
+class Brand2_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = hListModels.Brand
+        fields = '__all__'
+
+"""
+    def update(self, instance, validated_data):
+        # Update the  instance
+        instance.active = validated_data['active']
+        instance.alc = validated_data['alc']
+        instance.barcode = validated_data['barcode']
+        instance.ingredients = validated_data['ingredients']
+        instance
+
+  active: boolean = true;
+  alc: string;
+  barcode: string;
+  distributor: Distributor;
+  id: number;
+  ingredients: string;
+  more_details: string;
+  name: string;
+  pressure: any;
+  producer: Producer;
+  storage_condition: string;
+
+        instance.save()
+
+        return instance
+"""
