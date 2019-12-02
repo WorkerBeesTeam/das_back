@@ -519,7 +519,7 @@ class CodeViewSet(viewsets.ViewSet):
         except:
             git_obj = git.Repo.init(git_path)
 
-        git_path += str(code_id)
+        git_path += str(code_id) + '.js'
         open(git_path, 'w', encoding="utf8").write(text)
         try:
             git_obj.git.add(git_path)
