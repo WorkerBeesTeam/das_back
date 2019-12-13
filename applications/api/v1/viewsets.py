@@ -4,6 +4,7 @@ import json
 import os
 import git
 
+from django.db.models import Count
 from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -110,12 +111,16 @@ class TeamViewSet(viewsets.ViewSet):
 
 
 class CityViewSet(viewsets.ModelViewSet):
-    queryset = hListModels.City.objects.all()
     serializer_class = houseSerializers.CitySerializer
 
+    def get_queryset(self):
+        return hListModels.City.objects.filter(house__teams__team_user__user_id=self.request.user.id).annotate(Count("id")).order_by('id')
+
 class CompanyViewSet(viewsets.ModelViewSet):
-    queryset = hListModels.Company.objects.all()
     serializer_class = houseSerializers.CompanySerializer
+
+    def get_queryset(self):
+        return hListModels.Company.objects.filter(house__teams__team_user__user_id=self.request.user.id).annotate(Count("id")).order_by('id')
 
 class HouseFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(name='name', lookup_expr='icontains')
@@ -539,6 +544,11 @@ class DistributorViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = hListModels.Distributor.objects.all()
     serializer_class = houseSerializers.Distributor_Serializer
+
+class Brand2ViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = hListModels.Brand.objects.all()
+    serializer_class = houseSerializers.Brand2_Serializer
 
 class BrandViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
