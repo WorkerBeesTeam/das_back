@@ -44,6 +44,11 @@ class House(models.Model):
     device = models.UUIDField(default=uuid.uuid4)
     lastUsage = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        permissions = (
+            ( "netherlands", "It's permission for Netherlands" ),
+        )
+
     def __str__(self):
         return '{0} ({1})'.format(self.title, self.name)
 
@@ -91,7 +96,7 @@ class Brand(models.Model):
 
     class Meta:
         permissions = (
-            ( "can_change_brand_bind", "Can change brand bind" ), # deprecated
+            ( "can_change_brand_bind", "Can change brand bind" ),
         )
 
     def __str__(self):

@@ -120,10 +120,10 @@ def get_next_version(curr_version):
     for file_name in file_list:
         v = expr.match(file_name)
         if v:
-            version_list.append((int(v.group(1)), int(v.group(2)), int(v.group(3))))
+            version_list.append((v.group(1), v.group(2), v.group(3)))
 
     tmp = curr_version.split(".")
-    version_int = (int(tmp[0]), int(tmp[1]), int(tmp[2]))
+    version_int = (tmp[0], tmp[1], tmp[2])
     version_list.append(version_int)
     version_list.sort()
 

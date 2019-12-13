@@ -167,7 +167,7 @@ class FileUploadView(views.APIView):
         
         import dbus
         obj = dbus.SystemBus().get_object('ru.deviceaccess.Dai.Server', '/')
-        obj.write_item_file(project_id, user_id, devitem_id, file_name, file_path, dbus_interface='ru.deviceaccess.Dai.Server.iface')
+        obj.write_item_file(project_id, user_id, devitem_id, file_name, file_path, dbus_interface='ru.deviceaccess.Dai.iface')
 
         #print(subprocess.run(['/usr/bin/sudo', '/bin/sh', '-c', '/opt/test.sh'], capture_output=True))
         #args = ['/usr/bin/sudo', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, '--send_file_name', file_name]
