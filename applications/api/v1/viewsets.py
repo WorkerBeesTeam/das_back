@@ -4,6 +4,7 @@ import json
 import os
 import git
 
+from django.db.models import Count
 from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -110,12 +111,16 @@ class TeamViewSet(viewsets.ViewSet):
 
 
 class CityViewSet(viewsets.ModelViewSet):
-    queryset = hListModels.City.objects.all()
     serializer_class = houseSerializers.CitySerializer
 
+    def get_queryset(self):
+        return hListModels.City.objects.filter(house__teams__team_user__user_id=self.request.user.id).annotate(Count("id")).order_by('id')
+
 class CompanyViewSet(viewsets.ModelViewSet):
-    queryset = hListModels.Company.objects.all()
     serializer_class = houseSerializers.CompanySerializer
+
+    def get_queryset(self):
+        return hListModels.Company.objects.filter(house__teams__team_user__user_id=self.request.user.id).annotate(Count("id")).order_by('id')
 
 class HouseFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(name='name', lookup_expr='icontains')
@@ -167,7 +172,7 @@ class FileUploadView(views.APIView):
         
         import dbus
         obj = dbus.SystemBus().get_object('ru.deviceaccess.Dai.Server', '/')
-        obj.write_item_file(project_id, user_id, devitem_id, file_name, file_path, dbus_interface='ru.deviceaccess.Dai.Server.iface')
+        obj.write_item_file(project_id, user_id, devitem_id, file_name, file_path, dbus_interface='ru.deviceaccess.Dai.iface')
 
         #print(subprocess.run(['/usr/bin/sudo', '/bin/sh', '-c', '/opt/test.sh'], capture_output=True))
         #args = ['/usr/bin/sudo', settings.DAI_SERVER_PATH, '-l', '--user_id', user_id, '--project_id', project_id, '--devitem_id', devitem_id, '--send_file', file_path, '--send_file_name', file_name]
