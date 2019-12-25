@@ -28,7 +28,7 @@ from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify
 
 from applications import get_current_language
 from applications.api.v1.routes import urlpatterns as api_urlpatterns
-from applications.house_list import views
+from applications.house_list import views, models as list_models
 import subprocess
 import re
 import os
@@ -98,6 +98,13 @@ def check_version(req):
         print('error')
         cur_ver = '?'
     print("Check version: {0} from: {1} {2} current: {3}".format(client_ver, name, get_client_ip(req), cur_ver))
+
+    try:
+        h = list_models.House.objects.get(name=name)
+        h.version = client_ver
+        h.save()
+    except:
+        pass
 
     if not check_update_accepted(name):
         doc['version'] = client_ver
