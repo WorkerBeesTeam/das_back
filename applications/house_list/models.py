@@ -14,8 +14,8 @@ class Team_User(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
 class Employee(models.Model):
-    need_to_change_password = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=17, blank=True)
+    need_to_change_password = models.BooleanField(default=False, blank=True)
+    phone_number = models.CharField(max_length=17, blank=True, default='')
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     daily_report = models.IntegerField(blank=True, null=True, default=None)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, default=None)
@@ -40,6 +40,7 @@ class House(models.Model):
     name = models.CharField(max_length=32, unique=True)
     title = models.CharField(max_length=64, default='', blank=True)
     latin_name = models.CharField(max_length=32, unique=True)
+    version = models.CharField(max_length=32, blank=True, default='')
     description = models.TextField(default='', blank=True)
     device = models.UUIDField(default=uuid.uuid4)
     lastUsage = models.DateTimeField(auto_now=True)
