@@ -48,6 +48,26 @@ class House(models.Model):
     class Meta:
         permissions = (
             ( "netherlands", "It's permission for Netherlands" ),
+            ( "menu_details", "Details menu"),
+            ( "menu_management", "Management menu"),
+            ( "menu_elements", "Elements menu"),
+            ( "menu_log", "Log menu"),
+            ( "menu_value_log", "Value log menu"),
+            ( "menu_structure", "Structure menu"),
+            ( "menu_reports", "Reports menu"),
+            ( "menu_brands", "Brands menu"),
+            ( "menu_wifi_settings", "Wi-Fi settings menu"),
+            ( "menu_dispansing_settings", "Dispansing settings menu"),
+            ( "menu_export", "Export data menu"),
+            ( "menu_washing", "Washing menu"),
+            ( "menu_kegs", "Kegs menu"),
+            ( "menu_callibration", "Calibration menu"),
+            ( "menu_stand", "Stand menu"),
+            ( "menu_replace_sticker_roll", "Replace sticker roll menu"),
+            ( "menu_label", "Label text menu"),
+            ( "menu_controller", "Controller menu"),
+            ( "menu_opening_hours", "Opening hours menu"),
+            ( "menu_help", "Help menu"),
         )
 
     def __str__(self):
