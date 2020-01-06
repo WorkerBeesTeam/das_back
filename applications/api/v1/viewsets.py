@@ -69,6 +69,8 @@ class ChangePasswordView(generics.UpdateAPIView):
                 return Response("New password is the same of old_password", status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
             # set_password also hashes the password that the user will get
             self.object.set_password(serializer.data.get("new_password"))
+            self.object.employee.need_to_change_password = False
+            self.object.employee.save()
             self.object.save()
             return Response("Success.", status=status.HTTP_200_OK)
 
