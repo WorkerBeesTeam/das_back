@@ -11,14 +11,16 @@ if hasattr(builtins, "CURRENT_ENV"):
 # read the .env file associated with the settings that're loaded
 env.read_env('{0}/house4devices/{1}.env'.format(project_root, CURRENT_ENV))
 
+DAI_SERVER_PATH=env('DAI_SERVER_PATH')
+
 FRONTEND_ROOT = env('FRONTEND_ROOT')
 if not FRONTEND_ROOT.startswith('/'):
     FRONTEND_ROOT = str(environ.Path("{0}/{1}".format(project_root, FRONTEND_ROOT)))
 
 ALLOWED_HOSTS = ['*']
 
-TIME_ZONE = 'Asia/Novosibirsk'
-USE_TZ = True
+#TIME_ZONE = 'Asia/Novosibirsk'
+#USE_TZ = True
 
 #USE_I18N = True
 #USE_L10N = True
@@ -43,7 +45,6 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     #'rest_framework_filters',
-    'telegrambot',
 
     'applications.house',
     'applications.house_list'
@@ -75,7 +76,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [FRONTEND_ROOT],
+        'DIRS': [FRONTEND_ROOT, project_root + '/house4devices/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -124,11 +125,10 @@ import datetime
 JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER':
         'house4devices.auth.jwt_response_payload_handler',
+    'JWT_PAYLOAD_HANDLER':
+        'house4devices.auth.jwt_payload_handler',
     'JWT_ALLOW_REFRESH': True,
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
 }
-
-TELEGRAM_BOT_HANDLERS_CONF = "house4devices.bot_handlers"
-TELEGRAM_BOT_TOKEN_EXPIRATION = 72 # hours before a token expires
 
 CSRF_COOKIE_SECURE=False
