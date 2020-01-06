@@ -1,2 +1,0 @@
-Select from list:{% for author in authors %}
-{{ author.name }}{% endfor %}

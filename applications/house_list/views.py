@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 
 from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer #, ValidationError
 
@@ -21,3 +21,4 @@ def export_excel(req):
     # house, conn_name = checkConnection(req)
 
     return export_log2excel(req, get_conn_name)
+

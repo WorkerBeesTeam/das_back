@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User, Permission
 
 from rest_framework import serializers
+from rest_framework_jwt.utils import jwt_payload_handler as rfj_u_jph
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -29,6 +30,8 @@ def jwt_response_payload_handler(token, user=None, request=None):
     data = UserSerializer(user, context={'request': request}).data
     data['token'] = token
     if user:
+        data['need_to_change_password'] = user.employee.need_to_change_password
+        data['phone_number'] = user.employee.phone_number
         permissions = None
         if user.is_superuser:
             permissions = Permission.objects.all()
@@ -39,4 +42,8 @@ def jwt_response_payload_handler(token, user=None, request=None):
             data['permissions'] = [x.codename for x in permissions]
     return data
 
-
+def jwt_payload_handler(user):
+    res = rfj_u_jph(user)
+    res['teams'] = [user.employee.team.id]
+    #res['test'] = 'hello world!!!'
+    return res
