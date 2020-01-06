@@ -47,7 +47,6 @@ class House(models.Model):
 
     class Meta:
         permissions = (
-            ( "netherlands", "It's permission for Netherlands" ),
             ( "menu_details", "Details menu"),
             ( "menu_management", "Management menu"),
             ( "menu_elements", "Elements menu"),
@@ -55,17 +54,8 @@ class House(models.Model):
             ( "menu_value_log", "Value log menu"),
             ( "menu_structure", "Structure menu"),
             ( "menu_reports", "Reports menu"),
-            ( "menu_brands", "Brands menu"),
             ( "menu_wifi_settings", "Wi-Fi settings menu"),
-            ( "menu_dispansing_settings", "Dispansing settings menu"),
             ( "menu_export", "Export data menu"),
-            ( "menu_washing", "Washing menu"),
-            ( "menu_kegs", "Kegs menu"),
-            ( "menu_callibration", "Calibration menu"),
-            ( "menu_stand", "Stand menu"),
-            ( "menu_replace_sticker_roll", "Replace sticker roll menu"),
-            ( "menu_label", "Label text menu"),
-            ( "menu_controller", "Controller menu"),
             ( "menu_opening_hours", "Opening hours menu"),
             ( "menu_help", "Help menu"),
         )
@@ -90,36 +80,4 @@ class Code(models.Model):
 class TelegramSubscriber(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     chat_id = models.IntegerField()
-
-class Distributor(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    def __str__(self):
-        return self.name
-
-class Producer(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    def __str__(self):
-        return self.name
-
-class Brand(models.Model):
-    name = models.CharField(max_length=100)
-    alc = models.CharField(max_length=10)
-    ingredients = models.TextField(null=False)
-    more_details = models.TextField(null=True, default=None)
-    storage_condition = models.CharField(max_length=100)
-    pressure = models.FloatField(blank=True, null=True, default=None)
-    producer = models.ForeignKey(Producer, null=True, on_delete=models.SET_NULL)
-    distributor = models.ForeignKey(Distributor, null=True, on_delete=models.SET_NULL)
-    barcode = models.CharField(max_length=100)
-    active = models.BooleanField(null=False, default=1)
-
-    class Meta:
-        permissions = (
-            ( "can_change_brand_bind", "Can change brand bind" ),
-        )
-
-    def __str__(self):
-        return self.name
 

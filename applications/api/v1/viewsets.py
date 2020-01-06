@@ -536,23 +536,3 @@ class CodeViewSet(viewsets.ViewSet):
 
         print('git init ok')
 
-
-class ProducerViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    queryset = hListModels.Producer.objects.all()
-    serializer_class = houseSerializers.Producer_Serializer
-
-class DistributorViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    queryset = hListModels.Distributor.objects.all()
-    serializer_class = houseSerializers.Distributor_Serializer
-
-class Brand2ViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    queryset = hListModels.Brand.objects.all()
-    serializer_class = houseSerializers.Brand2_Serializer
-
-class BrandViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    queryset = hListModels.Brand.objects.all()
-    serializer_class = houseSerializers.Brand_Serializer
