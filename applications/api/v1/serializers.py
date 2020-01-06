@@ -47,7 +47,7 @@ class HouseSerializer(serializers.ModelSerializer):
 #    city = CitySerializer(many=False,read_only=False)
     class Meta:
         model = hListModels.House
-        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address', 'city', 'company', 'parent')
+        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address', 'city', 'company', 'parent', 'version')
         read_only_fields = ('id', 'name', 'device', 'lastUsage')
 
 class ParamItemSerializer(serializers.ModelSerializer):
@@ -271,50 +271,3 @@ class CodeSerializer(serializers.ModelSerializer):
         model = houseModels.Codes
         fields = ('id', 'name', 'text', 'global_id')
 
-class Distributor_Serializer(serializers.ModelSerializer):
-    class Meta:
-        model = hListModels.Distributor
-        fields = '__all__'
-
-class Producer_Serializer(serializers.ModelSerializer):
-    class Meta:
-        model = hListModels.Producer
-        fields = '__all__'
-
-class Brand_Serializer(serializers.ModelSerializer):
-    producer = Producer_Serializer()
-    distributor = Distributor_Serializer()
-    class Meta:
-        model = hListModels.Brand
-        fields = '__all__'
-
-class Brand2_Serializer(serializers.ModelSerializer):
-    class Meta:
-        model = hListModels.Brand
-        fields = '__all__'
-
-"""
-    def update(self, instance, validated_data):
-        # Update the  instance
-        instance.active = validated_data['active']
-        instance.alc = validated_data['alc']
-        instance.barcode = validated_data['barcode']
-        instance.ingredients = validated_data['ingredients']
-        instance
-
-  active: boolean = true;
-  alc: string;
-  barcode: string;
-  distributor: Distributor;
-  id: number;
-  ingredients: string;
-  more_details: string;
-  name: string;
-  pressure: any;
-  producer: Producer;
-  storage_condition: string;
-
-        instance.save()
-
-        return instance
-"""

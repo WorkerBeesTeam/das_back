@@ -14,8 +14,8 @@ class Team_User(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
 class Employee(models.Model):
-    need_to_change_password = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=17, blank=True)
+    need_to_change_password = models.BooleanField(default=False, blank=True)
+    phone_number = models.CharField(max_length=17, blank=True, default='')
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     daily_report = models.IntegerField(blank=True, null=True, default=None)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, default=None)
@@ -40,13 +40,24 @@ class House(models.Model):
     name = models.CharField(max_length=32, unique=True)
     title = models.CharField(max_length=64, default='', blank=True)
     latin_name = models.CharField(max_length=32, unique=True)
+    version = models.CharField(max_length=32, blank=True, default='')
     description = models.TextField(default='', blank=True)
     device = models.UUIDField(default=uuid.uuid4)
     lastUsage = models.DateTimeField(auto_now=True)
 
     class Meta:
         permissions = (
-            ( "netherlands", "It's permission for Netherlands" ),
+            ( "menu_details", "Details menu"),
+            ( "menu_management", "Management menu"),
+            ( "menu_elements", "Elements menu"),
+            ( "menu_log", "Log menu"),
+            ( "menu_value_log", "Value log menu"),
+            ( "menu_structure", "Structure menu"),
+            ( "menu_reports", "Reports menu"),
+            ( "menu_wifi_settings", "Wi-Fi settings menu"),
+            ( "menu_export", "Export data menu"),
+            ( "menu_opening_hours", "Opening hours menu"),
+            ( "menu_help", "Help menu"),
         )
 
     def __str__(self):
@@ -69,36 +80,4 @@ class Code(models.Model):
 class TelegramSubscriber(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     chat_id = models.IntegerField()
-
-class Distributor(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    def __str__(self):
-        return self.name
-
-class Producer(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    def __str__(self):
-        return self.name
-
-class Brand(models.Model):
-    name = models.CharField(max_length=100)
-    alc = models.CharField(max_length=10)
-    ingredients = models.TextField(null=False)
-    more_details = models.TextField(null=True, default=None)
-    storage_condition = models.CharField(max_length=100)
-    pressure = models.FloatField(blank=True, null=True, default=None)
-    producer = models.ForeignKey(Producer, null=True, on_delete=models.SET_NULL)
-    distributor = models.ForeignKey(Distributor, null=True, on_delete=models.SET_NULL)
-    barcode = models.CharField(max_length=100)
-    active = models.BooleanField(null=False, default=1)
-
-    class Meta:
-        permissions = (
-            ( "can_change_brand_bind", "Can change brand bind" ),
-        )
-
-    def __str__(self):
-        return self.name
 
