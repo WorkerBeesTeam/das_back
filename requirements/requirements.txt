@@ -1,10 +1,10 @@
 mysqlclient
 openpyxl
-Django==2.0.3
+Django==2.0.12
 django-braces==1.13.0
 django-environ==0.4.4
 django-filter==1.1.0
 django-registration==2.1.2
-djangorestframework==3.7.7
+djangorestframework==3.9.1
 djangorestframework-filters==0.10.2
 djangorestframework-jwt==1.11.0
