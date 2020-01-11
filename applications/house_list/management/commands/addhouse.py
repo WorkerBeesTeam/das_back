@@ -78,6 +78,7 @@ class Command(BaseCommand):
 
                 print("New house {0} added with id: {1}.".format(house.title, house.id))
 
+                parent = None
                 if options['parent_id']:
                     parent = House.objects.get(id=options['parent_id'])
                 elif options['parent_name']:
