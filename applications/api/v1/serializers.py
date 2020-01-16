@@ -56,11 +56,26 @@ class ParamItemSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'title', 'description', 'type', 'groupType_id', 'parent_id')
 
 class GroupParamSerializer(serializers.ModelSerializer):
-    value = serializers.SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field='value'
-    )
+    value = serializers.SerializerMethodField()
+    def get_value(self, obj):
+        value = None
+        try:
+            type = obj.param.type
+            value = obj.value.value
+            param = houseModels.ParamItem
+
+            if type == param.IntType:
+                return int(value)
+            elif type == param.BoolType:
+                return str(value).lower() == 'true'
+            elif type == param.FloatType:
+                return float(value)
+            else:
+                return value
+        except:
+            pass
+        return value if value is not None else ''
+ 
     class Meta:
         model = houseModels.Group_Param
         fields = ('id', 'value', 'group_id', 'param_id', 'parent_id')
