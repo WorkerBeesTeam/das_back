@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.urls import path, re_path
 from django.conf.urls import include, url
 from django.conf import settings
@@ -24,6 +25,8 @@ from django.views.static import serve
 from django.http import HttpResponse, HttpResponseRedirect
 from wsgiref.util import FileWrapper
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
 from applications import get_current_language
@@ -32,6 +35,7 @@ from applications.house_list import views, models as list_models
 import subprocess
 import re
 import os
+import json
 
 @ensure_csrf_cookie
 def show_main(req):
@@ -178,6 +182,36 @@ def upload_t(req):
 def get_csrf(req):
     return HttpResponse(status=204)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def tg_auth(req):
+    print('tg_auth method: ' + req.method)
+    if req.method != "POST":
+        return show_main(req)
+
+    json_data = json.loads(req.body.decode('utf-8'))
+    print('tg_auth json_data: ')
+    print(json_data)
+
+    token = json_data.get("token", None)
+    print('tg_auth token: ')
+    print(token)
+    if not token:
+        return HttpResponse("Bad request", status=400)
+    print(req.user.id)
+    print(req.user)
+    auth = None
+    try:
+        auth = list_models.Tg_Auth.objects.get(token=token)
+    except list_models.Tg_Auth.DoesNotExist:
+        return HttpResponse("Bad request", status=400)
+    
+    auth.tg_user.user = req.user
+    auth.tg_user.save()
+    auth.delete()
+    
+    return HttpResponse(status=204)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -192,6 +226,8 @@ urlpatterns = [
 
     url(r'^export/excel', views.export_excel),
     url(r'^upload_t', upload_t),
+
+    url(r'^api/tg_auth', tg_auth),
 
     url(r'^manage/(?P<houseId>\d+)$', lambda req, houseId: HttpResponseRedirect("/house/{0}/manage".format(houseId))),
     url(r'^$', show_main, name='index'),

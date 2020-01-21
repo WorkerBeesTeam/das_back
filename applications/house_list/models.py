@@ -77,7 +77,19 @@ class Code(models.Model):
     name = models.CharField(max_length=64, default='')
     text = models.TextField()
 
-class TelegramSubscriber(models.Model):
+class Tg_Subscriber(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    chat_id = models.IntegerField()
+    chat_id = models.BigIntegerField()
+
+class Tg_User(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    first_name = models.CharField(max_length=64, default='', blank=True)
+    last_name = models.CharField(max_length=64, default='', blank=True)
+    user_name = models.CharField(max_length=32)
+    lang = models.CharField(max_length=16)
+
+class Tg_Auth(models.Model):
+    tg_user = models.OneToOneField(Tg_User, on_delete=models.CASCADE, primary_key=True, related_name='auth')
+    expired = models.BigIntegerField()
+    token = models.CharField(max_length=512)
 
