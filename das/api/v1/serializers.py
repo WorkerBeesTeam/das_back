@@ -46,11 +46,19 @@ class DIG_Param_Type_Serializer(serializers.ModelSerializer):
 
 class DIG_Param_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
+
+    def get_real_scheme_id(self, obj):
+        p_name = 'real_scheme_id'
+        return self.context[p_name] if p_name in self.context else obj.scheme_id
+
     def get_value(self, obj):
         value = None
         try:
+            scheme_id = self.get_real_scheme_id(obj)
+            p_value = models.DIG_Param_Value.filter(scheme_id=scheme_id, group_param_id=obj.id).first()
+
             type = obj.param.value_type
-            value = obj.value.value
+            value = p_value.value if p_value else None
             param = models.DIG_Param_Type
 
             if type == param.VT_INT:
@@ -87,7 +95,7 @@ class DIG_Status_Serializer(serializers.ModelSerializer):
         fields = ('status_id', 'args')
 
 class Device_Item_Group_Serializer(serializers.ModelSerializer):
-    params = serializers.SerializerMethodField()
+    params = DIG_Param_Serializer(many=True, read_only=True)
     statuses = serializers.SerializerMethodField()
     mode = serializers.SerializerMethodField()
 
@@ -95,22 +103,17 @@ class Device_Item_Group_Serializer(serializers.ModelSerializer):
         p_name = 'real_scheme_id'
         return self.context[p_name] if p_name in self.context else obj.scheme_id
 
-    def get_params(self, obj):
-        scheme_id = self.get_real_scheme_id(obj)
-        items = obj.params.filter(scheme_id=scheme_id)
-        serializer = DIG_Param_Serializer(instance=items, many=True, read_only=True)
-        return serializer.data
-
     def get_statuses(self, obj):
         scheme_id = self.get_real_scheme_id(obj)
-        items = obj.statuses.filter(scheme_id=scheme_id)
+        items = models.DIG_Status.objects.filter(scheme_id=scheme_id, group_id=obj.id)
         serializer = DIG_Status_Serializer(instance=items, many=True, read_only=True)
         return serializer.data
 
     def get_mode(self, obj):
         scheme_id = self.get_real_scheme_id(obj)
         try:
-            return obj.mode.get(scheme_id=obj.scheme_id).mode_id
+            mode_item = models.DIG_Mode_Item.objects.get(scheme_id=scheme_id, group_id=obj.id)
+            return mode_item.mode_id
         except models.DIG_Mode_Item.DoesNotExist:
             pass
         return 0
@@ -218,7 +221,7 @@ class Device_Item_Serializer(serializers.ModelSerializer):
 
     def get_val(self, obj):
         scheme_id = self.get_real_scheme_id(obj)
-        item = obj.val.filter(scheme_id=scheme_id).first()
+        item = models.Device_Item_Value.objects.filter(scheme_id=scheme_id, device_item_id=obj.id).first()
         serializer = Device_Item_Value_Serializer(instance=item, read_only=True)
         return serializer.data
 
