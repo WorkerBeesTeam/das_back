@@ -5,11 +5,11 @@ from django.core.management import call_command
 from django.db import connection
 
 from applications import add_db_to_connections
-from applications.house_list.models import House, Team
+from applications.scheme_list.models import Scheme, Scheme_Group
 from . import sync_child_db
 
 class Command(BaseCommand):
-    help = 'Add device house and create database for it'
+    help = 'Add device scheme and create database for it'
     
     def add_arguments(self, parser):        
         parser.add_argument('name', help='Латинский аналог имени, должен быть уникальным')
@@ -25,16 +25,16 @@ class Command(BaseCommand):
         teams = []
         if team_id_list:
             for team_id in team_id_list:
-                teams.append(Team.objects.get(id=int(team_id)))
+                teams.append(Scheme_Group.objects.get(id=int(team_id)))
         if team_name_list:
             for team_name in team_name_list:
                 try:
-                    teams.append(Team.objects.get(name=team_name))
+                    teams.append(Scheme_Group.objects.get(name=team_name))
                 except:
                     print('Add team "' + team_name + '" ? [y/N]')
                     answer = input()
                     if answer.lower()[0] == 'y':
-                        team = Team()
+                        team = Scheme_Group()
                         team.name = team_name
                         team.save()
                         teams.append(team)
@@ -47,52 +47,52 @@ class Command(BaseCommand):
             exit()
 
         try:
-            house = House.objects.get(name=options['name'])
-        except House.DoesNotExist:
+            scheme = Scheme.objects.get(name=options['name'])
+        except Scheme.DoesNotExist:
             # device = uuid.UUID(options['device']) if options['device'] else uuid.uuid4()
-            house = House()
-            house.name = options['name']
-            house.title = options['title']
-            if not house.title:
-                house.title = house.name
-            house.latin_name = house.name
+            scheme = Scheme()
+            scheme.name = options['name']
+            scheme.title = options['title']
+            if not scheme.title:
+                scheme.title = scheme.name
+            scheme.latin_name = scheme.name
             if options['description']:
-                house.description = options['description']
+                scheme.description = options['description']
 
-        conn = add_db_to_connections(house.name)
+        conn = add_db_to_connections(scheme.name)
         
         with connection.cursor() as c:
             c.execute("CREATE SCHEMA /*!32312 IF NOT EXISTS*/ `{0}` DEFAULT CHARACTER SET utf8;".format(conn['NAME']))
             
-        is_new_proj = house.pk == None
+        is_new_proj = scheme.pk == None
         try:
-            call_command('migrate', '--settings', 'houses.settings.prod', '--database', house.name, 'house')
+            call_command('migrate', '--settings', 'schemes.settings.prod', '--database', scheme.name, 'scheme')
             print('Database create: Ok')
 
             if is_new_proj:
-                house.save()
+                scheme.save()
 
                 for team in teams:
-                    house.teams.add(team)
-                house.save()
+                    scheme.teams.add(team)
+                scheme.save()
 
-                print("New house {0} added with id: {1}.".format(house.title, house.id))
+                print("New scheme {0} added with id: {1}.".format(scheme.title, scheme.id))
 
                 parent = None
                 if options['parent_id']:
-                    parent = House.objects.get(id=options['parent_id'])
+                    parent = Scheme.objects.get(id=options['parent_id'])
                 elif options['parent_name']:
-                    parent = House.objects.get(name=options['parent_name'])
+                    parent = Scheme.objects.get(name=options['parent_name'])
 
                 if parent:
-                    sync_child_db.Command().sync_data(house.name, parent.name)
-                    house.parent = parent
-                    house.save()
+                    sync_child_db.Command().sync_data(scheme.name, parent.name)
+                    scheme.parent = parent
+                    scheme.save()
 
         except Exception as e:
             print(e)
             with connection.cursor() as c:
                 c.execute("DROP DATABASE `{0}`;".format(conn['NAME']))
-            if is_new_proj and house.pk:
-                house.delete()
+            if is_new_proj and scheme.pk:
+                scheme.delete()
 

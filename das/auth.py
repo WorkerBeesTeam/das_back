@@ -1,13 +1,20 @@
-from django.contrib.auth.models import User, Permission
+import json
+from django.contrib.auth.models import Permission
 
 from rest_framework import serializers
-from rest_framework_jwt.utils import jwt_payload_handler as rfj_u_jph
+from rest_framework_jwt.utils import jwt_payload_handler as jwt_payload_handler_origin
 
-class UserSerializer(serializers.ModelSerializer):
+# for tg_auth
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+from . import models
+
+class User_Serializer(serializers.ModelSerializer):
 
     class Meta:
-        model = User
-        fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name')
+        model = models.User
+        fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name', 'need_to_change_password', 'phone_number')
         extra_kwargs = {
           'id': {'read_only': True},
           'password': {'write_only': True},
@@ -27,11 +34,9 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 def jwt_response_payload_handler(token, user=None, request=None):
-    data = UserSerializer(user, context={'request': request}).data
+    data = User_Serializer(user, context={'request': request}).data
     data['token'] = token
     if user:
-        data['need_to_change_password'] = user.employee.need_to_change_password
-        data['phone_number'] = user.employee.phone_number
         permissions = None
         if user.is_superuser:
             permissions = Permission.objects.all()
@@ -43,7 +48,26 @@ def jwt_response_payload_handler(token, user=None, request=None):
     return data
 
 def jwt_payload_handler(user):
-    res = rfj_u_jph(user)
-    res['teams'] = [user.employee.team.id]
-    #res['test'] = 'hello world!!!'
+    res = jwt_payload_handler_origin(user)
+    res['groups'] = list(user.scheme_groups.values_list('group_id', flat=True))
     return res
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def tg_auth(req):
+    if req.method != "POST":
+        return show_main(req)
+
+    try:
+        json_data = json.loads(req.body.decode('utf-8'))
+        token = json_data["token"]
+        auth = list_models.Tg_Auth.objects.get(token=token)
+    except (list_models.Tg_Auth.DoesNotExist, KeyError) as e:
+        return HttpResponse("Bad request: " + str(e), status=400)
+    
+    auth.tg_user.user = req.user
+    auth.tg_user.save()
+    auth.delete()
+    
+    return HttpResponse(status=204)
+

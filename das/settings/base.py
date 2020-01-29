@@ -9,9 +9,9 @@ if hasattr(builtins, "CURRENT_ENV"):
     CURRENT_ENV = builtins.CURRENT_ENV
 
 # read the .env file associated with the settings that're loaded
-env.read_env('{0}/house4devices/{1}.env'.format(project_root, CURRENT_ENV))
+env.read_env('{0}/das/{1}.env'.format(project_root, CURRENT_ENV))
 
-DAI_SERVER_PATH=env('DAI_SERVER_PATH')
+UPDATE_ACCEPTED_LIST=env('UPDATE_ACCEPTED_LIST')
 
 FRONTEND_ROOT = env('FRONTEND_ROOT')
 if not FRONTEND_ROOT.startswith('/'):
@@ -19,9 +19,9 @@ if not FRONTEND_ROOT.startswith('/'):
 
 ALLOWED_HOSTS = ['*']
 
+#LANGUAGE_CODE = 'en-us'
 #TIME_ZONE = 'Asia/Novosibirsk'
 #USE_TZ = True
-
 #USE_I18N = True
 #USE_L10N = True
 
@@ -45,12 +45,13 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     #'rest_framework_filters',
-
-    'applications.house',
-    'applications.house_list'
+    'das',
+#
+#    'applications.scheme',
+#    'applications.scheme_list'
 ]
 
-ROOT_URLCONF = 'house4devices.urls'
+ROOT_URLCONF = 'das.urls'
 
 STATIC_URL = '/static/'
 STATICFILES_FINDERS = [
@@ -76,7 +77,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [FRONTEND_ROOT, project_root + '/house4devices/templates'],
+        'DIRS': [FRONTEND_ROOT, project_root + '/das/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -124,11 +125,16 @@ REST_FRAMEWORK = {
 import datetime
 JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER':
-        'house4devices.auth.jwt_response_payload_handler',
+        'das.auth.jwt_response_payload_handler',
     'JWT_PAYLOAD_HANDLER':
-        'house4devices.auth.jwt_payload_handler',
+        'das.auth.jwt_payload_handler',
     'JWT_ALLOW_REFRESH': True,
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
 }
 
 CSRF_COOKIE_SECURE=False
+
+AUTH_USER_MODEL = 'das.User'
+
+WSGI_APPLICATION = 'das.wsgi.application'
+

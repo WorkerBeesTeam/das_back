@@ -1,11 +1,10 @@
 import json
 from rest_framework import serializers
-from applications.house import models as houseModels
-from applications.house_list import models as hListModels
+from das import models
 
 from django.contrib.auth.password_validation import validate_password
 
-class ChangePasswordSerializer(serializers.Serializer):
+class Change_Password_Serializer(serializers.Serializer):
     """
     Serializer for password change endpoint.
     """
@@ -16,59 +15,49 @@ class ChangePasswordSerializer(serializers.Serializer):
         validate_password(value)
         return value
 
-class CitySerializer(serializers.ModelSerializer):
+class City_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = hListModels.City
+        model = models.City
         fields = ['id', 'name']
 
-class CompanySerializer(serializers.ModelSerializer):
+class Company_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = hListModels.Company
+        model = models.Company
         fields = ['id', 'name']
 
-class SaveTimerSerializer(serializers.ModelSerializer):
+class Save_Timer_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.Save_Timer
+        model = models.Save_Timer
         fields = ('id', 'interval')
 
-class ViewSerializer(serializers.ModelSerializer):
+class Scheme_Serializer(serializers.ModelSerializer):
+#    using_key = UUIDField(format='hex_verbose')
+#    company = Company_Serializer(many=False,read_only=False)
+#    city = City_Serializer(many=False,read_only=False)
     class Meta:
-        model = houseModels.View
-        fields = ('id', 'name')
+        model = models.Scheme
+        fields = ('id', 'name', 'using_key', 'last_usage', 'title', 'description', 'address', 'city', 'company', 'parent', 'version')
+        read_only_fields = ('id', 'name', 'using_key', 'last_usage')
 
-class ViewItemSerializer(serializers.ModelSerializer):
+class DIG_Param_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.ViewItem
-        fields = ('id', 'view_id', 'item_id')
+        model = models.DIG_Param_Type
+        fields = ('id', 'name', 'title', 'description', 'value_type', 'group_type_id', 'parent_id')
 
-class HouseSerializer(serializers.ModelSerializer):
-#    device = UUIDField(format='hex_verbose')
-#    company = CompanySerializer(many=False,read_only=False)
-#    city = CitySerializer(many=False,read_only=False)
-    class Meta:
-        model = hListModels.House
-        fields = ('id', 'name', 'device', 'lastUsage', 'title', 'description', 'address', 'city', 'company', 'parent', 'version')
-        read_only_fields = ('id', 'name', 'device', 'lastUsage')
-
-class ParamItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = houseModels.ParamItem
-        fields = ('id', 'name', 'title', 'description', 'type', 'groupType_id', 'parent_id')
-
-class GroupParamSerializer(serializers.ModelSerializer):
+class DIG_Param_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
     def get_value(self, obj):
         value = None
         try:
-            type = obj.param.type
+            type = obj.param.value_type
             value = obj.value.value
-            param = houseModels.ParamItem
+            param = models.DIG_Param_Type
 
-            if type == param.IntType:
+            if type == param.VT_INT:
                 return int(value)
-            elif type == param.BoolType:
+            elif type == param.VT_BOOL:
                 return str(value).lower() == 'true'
-            elif type == param.FloatType:
+            elif type == param.VT_FLOAT:
                 return float(value)
             else:
                 return value
@@ -77,15 +66,15 @@ class GroupParamSerializer(serializers.ModelSerializer):
         return value if value is not None else ''
  
     class Meta:
-        model = houseModels.Group_Param
+        model = models.DIG_Param
         fields = ('id', 'value', 'group_id', 'param_id', 'parent_id')
 
-class GroupModeSerializer(serializers.ModelSerializer):
+class DIG_Mode_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.GroupMode
+        model = models.DIG_Mode
         fields = ('id', 'name', 'group_type_id', 'title')
 
-class GroupStatusSerializer(serializers.ModelSerializer):
+class DIG_Status_Serializer(serializers.ModelSerializer):
     args = serializers.SerializerMethodField()
 
     def get_args(self, obj):
@@ -94,20 +83,46 @@ class GroupStatusSerializer(serializers.ModelSerializer):
         return []
 
     class Meta:
-        model = houseModels.GroupStatus
+        model = models.DIG_Status
         fields = ('status_id', 'args')
 
-class GroupSerializer(serializers.ModelSerializer):
-    params = GroupParamSerializer(many=True, read_only=True)
-    mode = serializers.SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field='mode_id'
-     )
-    statuses = GroupStatusSerializer(many=True, read_only=True)
+class Device_Item_Group_Serializer(serializers.ModelSerializer):
+    params = serializers.SerializerMethodField()
+    statuses = serializers.SerializerMethodField()
+    mode = serializers.SerializerMethodField()
+
+    def get_real_scheme_id(self, obj):
+        p_name = 'real_scheme_id'
+        return self.context[p_name] if p_name in self.context else obj.scheme_id
+
+    def get_params(self, obj):
+        scheme_id = self.get_real_scheme_id(obj)
+        items = obj.params.filter(scheme_id=scheme_id)
+        serializer = DIG_Param_Serializer(instance=items, many=True, read_only=True)
+        return serializer.data
+
+    def get_statuses(self, obj):
+        scheme_id = self.get_real_scheme_id(obj)
+        items = obj.statuses.filter(scheme_id=scheme_id)
+        serializer = DIG_Status_Serializer(instance=items, many=True, read_only=True)
+        return serializer.data
+
+    def get_mode(self, obj):
+        scheme_id = self.get_real_scheme_id(obj)
+        try:
+            return obj.mode.get(scheme_id=obj.scheme_id).mode_id
+        except models.DIG_Mode_Item.DoesNotExist:
+            pass
+        return 0
+
+    # mode = serializers.SlugRelatedField(
+    #     many=False,
+    #     read_only=True,
+    #     slug_field='mode_id'
+    #  )
 
     class Meta:
-        model = houseModels.Group
+        model = models.Device_Item_Group
         fields = ('id', 'title', 'type_id', 'params', 'mode', 'statuses')
   
 #class GroupType(models.Model):
@@ -117,42 +132,42 @@ class GroupSerializer(serializers.ModelSerializer):
 #    code = models.ForeignKey(Codes, null=True, on_delete=models.SET_NULL)
 #    description = models.CharField(max_length=1024, default='')
    
-class GroupTypeSerializer(serializers.ModelSerializer):
+class DIG_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.GroupType
-        fields = ('id', 'name', 'title', 'code_id', 'description')
+        model = models.DIG_Type
+        fields = ('id', 'name', 'title', 'description')
 
-class ItemTypeSerializer(serializers.ModelSerializer):
+class Device_Item_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.ItemType
-        fields = ('id', 'name', 'title', 'isRaw', 'groupType_id', 'sign_id', 'registerType', 'saveAlgorithm', 'save_timer_id')
+        model = models.Device_Item_Type
+        fields = ('id', 'name', 'title', 'group_type_id', 'sign_id', 'register_type', 'save_algorithm', 'save_timer_id')
 
-class SignTypeSerializer(serializers.ModelSerializer):
+class Sign_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.SignType
+        model = models.Sign_Type
         fields = '__all__'
 
-class CheckerTypeSerializer(serializers.ModelSerializer):
+class Plugin_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.CheckerType
+        model = models.Plugin_Type
         fields = '__all__'
 
-class StatusTypeSerializer(serializers.ModelSerializer):
+class DIG_Status_Category_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.StatusType
+        model = models.DIG_Status_Category
         fields = '__all__'
 
-class StatusesSerializer(serializers.ModelSerializer):
+class DIG_Status_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.Status
-        fields = ('id', 'groupType_id', 'type_id', 'name', 'text', 'inform')
+        model = models.DIG_Status_Type
+        fields = ('id', 'group_type_id', 'category_id', 'name', 'text', 'inform')
 
-class SectionSerializer(serializers.ModelSerializer):
-    groups = GroupSerializer(many=True, read_only=True)
+class Section_Serializer(serializers.ModelSerializer):
+    groups = Device_Item_Group_Serializer(many=True, read_only=True)
     
     class Meta:
-        model = houseModels.Section
-        fields = ('id', 'name', 'dayStart', 'dayEnd', 'groups')
+        model = models.Section
+        fields = ('id', 'name', 'day_start', 'day_end', 'groups')
 
 def normalize_value(val):
     try:
@@ -190,60 +205,84 @@ class Device_Item_Value_Serializer(serializers.ModelSerializer):
         return normalize_value(obj.raw)
 
     class Meta:
-        model = houseModels.Device_Item_Value
+        model = models.Device_Item_Value
         fields = ('raw', 'display')
 
-class DeviceItemSerializer(serializers.ModelSerializer):
-    val = Device_Item_Value_Serializer(required=True)
+class Device_Item_Serializer(serializers.ModelSerializer):
+    # val = Device_Item_Value_Serializer(read_only=True)
+    val = serializers.SerializerMethodField()
+
+    def get_real_scheme_id(self, obj):
+        p_name = 'real_scheme_id'
+        return self.context[p_name] if p_name in self.context else obj.scheme_id
+
+    def get_val(self, obj):
+        scheme_id = self.get_real_scheme_id(obj)
+        item = obj.val.filter(scheme_id=scheme_id).first()
+        serializer = Device_Item_Value_Serializer(instance=item, read_only=True)
+        return serializer.data
+
+#    def to_representation(self, obj):
+#        ret = super().to_representation(obj)
+#        try:
+#            val = obj.val.get(scheme_id=obj.scheme_id)
+#        except models.Device_Item_Value.DoesNotExist:
+#            val = None
+#
+#        ret['val'] = {
+#                'raw': normalize_value(val.raw) if val else None,
+#                'display': normalize_value(val.display) if val else None,
+#                }
+#        return ret
 
     class Meta:
-        model = houseModels.DeviceItem
+        model = models.Device_Item
         fields = ('id', 'name', 'type_id', 'extra', 'group_id', 'device_id', 'parent_id', 'val')
 
-class CheckerTypeSerializer(serializers.ModelSerializer):
+class Plugin_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.CheckerType
+        model = models.Plugin_Type
         fields = '__all__'
 
-class DeviceSerializer(serializers.ModelSerializer):
-    items = DeviceItemSerializer(many=True, read_only=True)
+class Device_Serializer(serializers.ModelSerializer):
+    items = Device_Item_Serializer(many=True, read_only=True)
 
     class Meta:
-        model = houseModels.Device
-        fields = ('id', 'name', 'extra', 'checker_id', 'check_interval', 'items')
+        model = models.Device
+        fields = ('id', 'name', 'extra', 'plugin_id', 'check_interval', 'items')
 
 class Log_Event_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.Log_Event
+        model = models.Log_Event
         fields = '__all__'
 
 class LDS2_Type(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.ItemType
+        model = models.Device_Item_Type
         fields = ('id','title')
 
 class LDS2_Section(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.Section
+        model = models.Section
         fields = ('id','name')
 
-class LDS2_GroupType(serializers.ModelSerializer):
+class LDS2_DIG_Type(serializers.ModelSerializer):
     class Meta:
-        model = houseModels.GroupType
+        model = models.DIG_Type
         fields = ('id','title')
 
-class LDS2_Group(serializers.ModelSerializer):
+class LDS2_Device_Item_Group(serializers.ModelSerializer):
     section = LDS2_Section()
-    type = LDS2_GroupType()
+    type = LDS2_DIG_Type()
     class Meta:
-        model = houseModels.Group
+        model = models.Device_Item_Group
         fields = ('id','title','section','type')
 
-class LDS2_Item(serializers.ModelSerializer):
+class LDS2_Device_Item(serializers.ModelSerializer):
     type = LDS2_Type()
-    group = LDS2_Group()
+    group = LDS2_Device_Item_Group()
     class Meta:
-        model = houseModels.DeviceItem
+        model = models.Device_Item
         fields = ('id','name','type','group')
 
 class Log_Data_Serializer_2(serializers.ModelSerializer):
@@ -256,9 +295,9 @@ class Log_Data_Serializer_2(serializers.ModelSerializer):
     def get_raw_value(self, obj):
         return normalize_value(obj.raw_value)
 
-    item = LDS2_Item(many=False)
+    item = LDS2_Device_Item(many=False)
     class Meta:
-        model = houseModels.Log_Data
+        model = models.Log_Data
         fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
 
@@ -273,16 +312,16 @@ class Log_Data_Serializer(serializers.ModelSerializer):
         return normalize_value(obj.raw_value)
 
     class Meta:
-        model = houseModels.Log_Data
+        model = models.Log_Data
         fields = ('timestamp_msecs', 'item_id', 'raw_value', 'value')
 
-class CodeSerializer(serializers.ModelSerializer):
+class Code_Item_Serializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
-        super(CodeSerializer, self).__init__(*args, **kwargs)
+        super(Code_Item_Serializer, self).__init__(*args, **kwargs)
         if kwargs.get('many', False):
             self.fields.pop('text')
 
     class Meta:
-        model = houseModels.Codes
+        model = models.Code_Item
         fields = ('id', 'name', 'text', 'global_id')
 

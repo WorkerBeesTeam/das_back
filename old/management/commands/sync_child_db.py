@@ -5,11 +5,11 @@ from django.core.management import call_command
 from django.db import connection, connections
 
 from applications import add_db_to_connections
-from applications.house_list.models import House, Team
-from applications.house import models
+from applications.scheme_list.models import Scheme, Scheme_Group
+from applications.scheme import models
 
 class Command(BaseCommand):
-    help = 'Add device house and create database for it'
+    help = 'Add device scheme and create database for it'
     
     def add_arguments(self, parser):        
         parser.add_argument('--id', help='ID родительского проектa')
@@ -71,16 +71,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         if options['id']:
-            house = House.objects.get(id=options['id'])
+            scheme = Scheme.objects.get(id=options['id'])
         elif options['name']:
-            house = House.objects.get(name=options['name'])
+            scheme = Scheme.objects.get(name=options['name'])
 
-        if house:
+        if scheme:
             if options['child_name']:
-                child = House.objects.get(name=options['child_name'])
-                self.sync_data(child.name, house.name)
+                child = Scheme.objects.get(name=options['child_name'])
+                self.sync_data(child.name, scheme.name)
             else:
-                childs = house.children.all()
+                childs = scheme.children.all()
                 for child in childs:
-                    self.sync_data(child.name, house.name)
+                    self.sync_data(child.name, scheme.name)
 
