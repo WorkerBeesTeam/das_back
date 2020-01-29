@@ -1,3 +1,0 @@
-[submodule "applications/house"]
-	path = applications/house
-  url = https://github.com/WorkerBeesTeam/DaiDjangoHouse.git
