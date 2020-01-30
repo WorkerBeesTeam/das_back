@@ -55,7 +55,7 @@ class DIG_Param_Serializer(serializers.ModelSerializer):
         value = None
         try:
             scheme_id = self.get_real_scheme_id(obj)
-            p_value = models.DIG_Param_Value.filter(scheme_id=scheme_id, group_param_id=obj.id).first()
+            p_value = models.DIG_Param_Value.objects.filter(scheme_id=scheme_id, group_param_id=obj.id).first()
 
             type = obj.param.value_type
             value = p_value.value if p_value else None
