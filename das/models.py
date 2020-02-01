@@ -80,7 +80,7 @@ class Tg_User(models.Model):
     last_name = models.CharField(max_length=64, default='', blank=True)
     user_name = models.CharField(max_length=32)
     lang = models.CharField(max_length=16)
-    private_chat_id = models.BigIntegerField()
+    private_chat_id = models.BigIntegerField(blank=True, null=True, default=None)
 
 class Tg_Auth(models.Model):
     tg_user = models.OneToOneField(Tg_User, on_delete=models.CASCADE, primary_key=True, related_name='auth')
