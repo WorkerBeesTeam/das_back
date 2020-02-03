@@ -19,11 +19,12 @@ from django.conf import settings
 
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
-from das.api.v1.routes import urlpatterns as api_urls
-from das.updates import urlpatterns as updates_urls
-from das.auth import tg_auth
+from .api.v1.routes import urlpatterns as api_urls
+from .updates import urlpatterns as updates_urls
+from .auth import tg_auth
 
-from das import views
+from . import views
+from .export import export_excel
 
 auth_urls = [
     path('auth/', obtain_jwt_token),
@@ -41,7 +42,7 @@ urlpatterns = [
 
     path('updates/', include(updates_urls)),
 
-    path('export/excel/', views.export_excel),
+    path('export/excel/', export_excel),
 
     path('', views.show_main, name='index'),
     path('get_csrf', views.get_csrf),
