@@ -25,6 +25,7 @@ from .auth import tg_auth
 
 from . import views
 from .export import export_excel
+from .updates import updates_check, updates_file # deprecated
 
 auth_urls = [
     path('auth/', obtain_jwt_token),
@@ -41,6 +42,8 @@ urlpatterns = [
     path('api/tg_auth/', tg_auth),
 
     path('updates/', include(updates_urls)),
+    path('check_version/', updates_check), # deprecated 
+    path('update_file/', updates_file),   # deprecated 
 
     path('export/excel/', export_excel),
 
