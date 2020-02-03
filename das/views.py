@@ -12,7 +12,6 @@
 # from django.views.generic import TemplateView
 # from wsgiref.util import FileWrapper
 # 
-# from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer #, ValidationError
 # 
 # from applications import add_db_to_connections
 # from .tool import checkConnection
@@ -26,7 +25,6 @@
 # from django.views.decorators.http import require_http_methods
 
 from django.http import HttpResponse, HttpResponseRedirect
-from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.static import serve
 
@@ -67,18 +65,4 @@ def get_client_ip(request):
 @ensure_csrf_cookie
 def get_csrf(req):
     return HttpResponse(status=204)
-
-
-@require_POST
-def export_excel(req):
-    auth = req.META.get('HTTP_AUTHORIZATION')
-    valid_data = VerifyJSONWebTokenSerializer().validate({'token': auth[4:]})
-    req.user = valid_data['user']
-
-    def get_conn_name(proj):
-        add_db_to_connections(proj.name)
-        return proj.name
-    # scheme, conn_name = checkConnection(req)
-
-    return export_log2excel(req, get_conn_name)
 
