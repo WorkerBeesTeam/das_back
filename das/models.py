@@ -46,10 +46,10 @@ class Scheme(models.Model):
 
     class Meta:
         permissions = (
-            ( "menu_details", "Details menu"),
+            ( "menu_detail", "Details menu"),
             ( "menu_elements", "Elements menu"),
-            ( "menu_log", "Log menu"),
-            ( "menu_value_log", "Value log menu"),
+            ( "menu_log_event", "Log menu"),
+            ( "menu_log_value", "Value log menu"),
             ( "menu_structure", "Structure menu"),
             ( "menu_reports", "Reports menu"),
             ( "menu_help", "Help menu"),
