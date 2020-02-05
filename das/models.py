@@ -47,15 +47,11 @@ class Scheme(models.Model):
     class Meta:
         permissions = (
             ( "menu_details", "Details menu"),
-            ( "menu_management", "Management menu"),
             ( "menu_elements", "Elements menu"),
             ( "menu_log", "Log menu"),
             ( "menu_value_log", "Value log menu"),
             ( "menu_structure", "Structure menu"),
             ( "menu_reports", "Reports menu"),
-            ( "menu_wifi_settings", "Wi-Fi settings menu"),
-            ( "menu_export", "Export data menu"),
-            ( "menu_opening_hours", "Opening hours menu"),
             ( "menu_help", "Help menu"),
         )
 
@@ -121,6 +117,11 @@ class Code_Item(Schemed_Model):
     name = models.CharField(max_length=2048, default='')
     text = models.TextField()
     global_id = models.IntegerField(null=True, default=None)
+    
+    class Meta:
+        permissions = (
+            ( "exec_script", "Can script execute" ),
+        )
     
 class DIG_Type(Titled_Model):
     description = models.CharField(max_length=1024, blank=True, default='')
