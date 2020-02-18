@@ -126,7 +126,7 @@ class Code_Item(Schemed_Model):
 class DIG_Type(Titled_Model):
     description = models.CharField(max_length=1024, blank=True, default='')
 
-class DIG_Mode(Titled_Model):
+class DIG_Mode_Type(Titled_Model):
     group_type = models.ForeignKey(DIG_Type, null=True, default=None, on_delete=models.SET_NULL)
      
 class Device_Item_Group(Schemed_Model):
@@ -141,9 +141,23 @@ class Device_Item_Group(Schemed_Model):
 
     section = models.ForeignKey(Section, related_name='groups', on_delete=models.CASCADE) # deprecated | rename to parent
 
-class DIG_Mode_Item(Schemed_Model):
-    group = models.ForeignKey(Device_Item_Group, on_delete=models.CASCADE, related_name='mode')
-    mode = models.ForeignKey(DIG_Mode, on_delete=models.SET_NULL, null=True, default=None)
+class Log_Base(Schemed_Model):
+    timestamp_msecs = models.BigIntegerField()
+    user_id = models.IntegerField(blank=True, null=True, default=None)
+    class Meta:
+        abstract = True
+
+class DIG_Mode_Base(Log_Base):
+    group = models.ForeignKey(Device_Item_Group, on_delete=models.CASCADE)
+    mode = models.ForeignKey(DIG_Mode_Type, on_delete=models.SET_NULL, null=True, default=None)
+    class Meta:
+        abstract = True
+
+class DIG_Mode(DIG_Mode_Base):
+    pass
+
+class Log_Mode(DIG_Mode_Base):
+    pass
 
 class Sign_Type(Schemed_Model):
     name = models.CharField(max_length=10)
@@ -202,26 +216,23 @@ class Device_Item(Schemed_Model):
             ( "toggle_deviceitem", "Can change device item state" ), # deprecated
         )
  
-class Device_Item_Value(Schemed_Model):
-    device_item = models.ForeignKey(Device_Item, on_delete=models.CASCADE, related_name='val')
-    raw = models.CharField(max_length=512, blank=True, null=True, default=None)
-    display = models.CharField(max_length=512, blank=True, null=True, default=None)
+class Device_Item_Value_Base(Log_Base):
+    item = models.ForeignKey(Device_Item, on_delete=models.CASCADE)
+    raw_value = models.TextField(blank=True, null=True, default=None)
+    value = models.TextField(blank=True, null=True, default=None)
+    class Meta:
+        abstract = True
 
+class Device_Item_Value(Device_Item_Value_Base):
     class Meta:
         permissions = (
             ( "toggle_device_item_value", "Can change device item state" ),
         )
 
-class Log_Data(Schemed_Model):
-    timestamp_msecs = models.BigIntegerField()
-    user_id = models.IntegerField(null=True, default=None)
-    item = models.ForeignKey(Device_Item, on_delete=models.CASCADE)
-    raw_value = models.CharField(max_length=512, blank=True, null=True, default=None)
-    value = models.CharField(max_length=512, blank=True, null=True, default=None)
+class Log_Value(Device_Item_Value_Base):
+    pass
 
-class Log_Event(Schemed_Model):
-    timestamp_msecs = models.BigIntegerField()
-    user_id = models.IntegerField(null=True, default=None)
+class Log_Event(Log_Base):
     category = models.CharField(max_length=64)
     text = models.CharField(max_length=1024)
     
@@ -256,11 +267,26 @@ class DIG_Status_Type(Schemed_Model):
     text = models.CharField(max_length=512)
     inform = models.BooleanField(default=True)
 
-class DIG_Status(Schemed_Model):
-    group = models.ForeignKey(Device_Item_Group, on_delete=models.CASCADE, related_name='statuses')
+class DIG_Status_Base(Log_Base):
+    group = models.ForeignKey(Device_Item_Group, on_delete=models.CASCADE)
     status = models.ForeignKey(DIG_Status_Type, on_delete=models.CASCADE)
     args = models.CharField(max_length=512, null=True, default=None)
+    class Meta:
+        abstract = True
      
+class DIG_Status(DIG_Status_Base):
+    pass
+
+class Log_Status(DIG_Status_Base):
+    SD_ADD = 1
+    SD_DEL = 2
+
+    Status_Direction = (
+            (SD_ADD, 'Add'),
+            (SD_DEL, 'Del'),
+    )
+    direction = models.SmallIntegerField(choices=Status_Direction)
+
 class DIG_Param_Type(Titled_Model):
     description = models.CharField(max_length=512, blank=True, default='')
     group_type = models.ForeignKey(DIG_Type, null=True, on_delete=models.CASCADE)
@@ -294,11 +320,19 @@ class DIG_Param(Schemed_Model):
     parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.CASCADE, related_name='childs')
     group = models.ForeignKey(Device_Item_Group, related_name="params", on_delete=models.CASCADE)
     param = models.ForeignKey(DIG_Param_Type, on_delete=models.CASCADE)
-
-class DIG_Param_Value(Schemed_Model):
-    group_param = models.ForeignKey(DIG_Param, on_delete=models.CASCADE, related_name='value')
+ 
+class DIG_Param_Value_Base(Log_Base):
+    group_param = models.ForeignKey(DIG_Param, on_delete=models.CASCADE)
     value = models.TextField(null=True, default=None)
-    
+    class Meta:
+        abstract = True
+
+class DIG_Param_Value(DIG_Param_Value_Base):
+    pass
+
+class Log_Param(DIG_Param_Value_Base):
+    pass
+
 class Translation(Schemed_Model):
     lang = models.CharField(max_length=64)
     data = models.TextField()

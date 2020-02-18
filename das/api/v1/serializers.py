@@ -77,9 +77,9 @@ class DIG_Param_Serializer(serializers.ModelSerializer):
         model = models.DIG_Param
         fields = ('id', 'value', 'group_id', 'param_id', 'parent_id')
 
-class DIG_Mode_Serializer(serializers.ModelSerializer):
+class DIG_Mode_Type_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = models.DIG_Mode
+        model = models.DIG_Mode_Type
         fields = ('id', 'name', 'group_type_id', 'title')
 
 class DIG_Status_Serializer(serializers.ModelSerializer):
@@ -112,9 +112,9 @@ class Device_Item_Group_Serializer(serializers.ModelSerializer):
     def get_mode(self, obj):
         scheme_id = self.get_real_scheme_id(obj)
         try:
-            mode_item = models.DIG_Mode_Item.objects.get(scheme_id=scheme_id, group_id=obj.id)
+            mode_item = models.DIG_Mode.objects.get(scheme_id=scheme_id, group_id=obj.id)
             return mode_item.mode_id
-        except models.DIG_Mode_Item.DoesNotExist:
+        except models.DIG_Mode.DoesNotExist:
             pass
         return 0
 
@@ -198,18 +198,18 @@ def normalize_value(val):
     return val
 
 class Device_Item_Value_Serializer(serializers.ModelSerializer):
-    display = serializers.SerializerMethodField()
-    raw = serializers.SerializerMethodField()
+    value = serializers.SerializerMethodField()
+    raw_value = serializers.SerializerMethodField()
 
-    def get_display(self, obj):
-        return normalize_value(obj.display)
+    def get_value(self, obj):
+        return normalize_value(obj.value)
     
-    def get_raw(self, obj):
-        return normalize_value(obj.raw)
+    def get_raw_value(self, obj):
+        return normalize_value(obj.raw_value)
 
     class Meta:
         model = models.Device_Item_Value
-        fields = ('raw', 'display')
+        fields = ('raw_value', 'value')
 
 class Device_Item_Serializer(serializers.ModelSerializer):
     # val = Device_Item_Value_Serializer(read_only=True)
@@ -221,7 +221,7 @@ class Device_Item_Serializer(serializers.ModelSerializer):
 
     def get_val(self, obj):
         scheme_id = self.get_real_scheme_id(obj)
-        item = models.Device_Item_Value.objects.filter(scheme_id=scheme_id, device_item_id=obj.id).first()
+        item = models.Device_Item_Value.objects.filter(scheme_id=scheme_id, item_id=obj.id).first()
         serializer = Device_Item_Value_Serializer(instance=item, read_only=True)
         return serializer.data
 
@@ -233,8 +233,8 @@ class Device_Item_Serializer(serializers.ModelSerializer):
 #            val = None
 #
 #        ret['val'] = {
-#                'raw': normalize_value(val.raw) if val else None,
-#                'display': normalize_value(val.display) if val else None,
+#                'raw_value': normalize_value(val.raw_value) if val else None,
+#                'value': normalize_value(val.value) if val else None,
 #                }
 #        return ret
 
@@ -288,7 +288,7 @@ class LDS2_Device_Item(serializers.ModelSerializer):
         model = models.Device_Item
         fields = ('id','name','type','group')
 
-class Log_Data_Serializer_2(serializers.ModelSerializer):
+class Log_Value_Serializer_2(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
     raw_value = serializers.SerializerMethodField()
 
@@ -300,11 +300,11 @@ class Log_Data_Serializer_2(serializers.ModelSerializer):
 
     item = LDS2_Device_Item(many=False)
     class Meta:
-        model = models.Log_Data
+        model = models.Log_Value
         fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
 
-class Log_Data_Serializer(serializers.ModelSerializer):
+class Log_Value_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
     raw_value = serializers.SerializerMethodField()
 
@@ -315,7 +315,7 @@ class Log_Data_Serializer(serializers.ModelSerializer):
         return normalize_value(obj.raw_value)
 
     class Meta:
-        model = models.Log_Data
+        model = models.Log_Value
         fields = ('timestamp_msecs', 'item_id', 'raw_value', 'value')
 
 class Code_Item_Serializer(serializers.ModelSerializer):
