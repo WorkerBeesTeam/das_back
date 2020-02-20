@@ -288,7 +288,7 @@ class LDS2_Device_Item(serializers.ModelSerializer):
         model = models.Device_Item
         fields = ('id','name','type','group')
 
-class Log_Value_Serializer_2(serializers.ModelSerializer):
+class Log_Value_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
     raw_value = serializers.SerializerMethodField()
 
@@ -304,7 +304,7 @@ class Log_Value_Serializer_2(serializers.ModelSerializer):
         fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
 
-class Log_Value_Serializer(serializers.ModelSerializer):
+class Chart_Data_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
     raw_value = serializers.SerializerMethodField()
 

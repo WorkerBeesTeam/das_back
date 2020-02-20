@@ -224,9 +224,9 @@ class LDVS2_Filter(django_filters.FilterSet):
         #fields = ['name', 'title', 'description','address','city','company','city__id','company__id']
         fields = ['timestamp_msecs', 'min_ts', 'max_ts', 'item__type__title', 'item__name', 'item__group__title', 'item__group__type__title', 'item__group__section__name','item__group_id']
 
-class Log_Value_View_Set_2(viewsets.ModelViewSet): 
+class Log_Value_View_Set(viewsets.ModelViewSet): 
 #    queryset = models.EventLog.objects.filter(scheme_id=scheme.id)
-    serializer_class = api_serializers.Log_Value_Serializer_2
+    serializer_class = api_serializers.Log_Value_Serializer
     filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
     filter_class = LDVS2_Filter
     filterset_class = LDVS2_Filter
@@ -258,44 +258,70 @@ def device_items(req):
     scheme_id = scheme.parent_id if scheme.parent_id else scheme.id
     return models.DeviceItem.objects.filter(scheme_id=scheme_id)
 
-class Log_Value_View_Set(viewsets.ModelViewSet): 
-    serializer_class = api_serializers.Log_Value_Serializer
+class Chart_Data_View_Set(viewsets.ModelViewSet): 
+    serializer_class = api_serializers.Chart_Data_Serializer
 #    filter_backends = (filters.OrderingFilter,)
 #    permission_classes = (AllowAny,)
+
+    CT_USER = 1
+    CT_DIG_TYPE = 2
+    CT_DEVICE_ITEM_TYPE = 3
+    CT_DEVICE_ITEM = 4
+
     def get_queryset(self):
 #        from applications import add_db_to_connections
 #        add_db_to_connections('baltika0')
 #        return models.Logs.objects.all()
+
+        chart_type = int(self.request.GET['chart_type'])
+        data = self.request.GET['data']
+
         scheme = get_scheme(self.request)
         one_scheme = Q(scheme_id=scheme.id)
 
-        ts_from = self.request.GET.get('ts_from', '')
-        ts_to = self.request.GET.get('ts_to', '')
+        ts_from = self.request.GET['ts_from']
+        ts_to = self.request.GET['ts_to']
         in_range = Q(timestamp_msecs__range=[ts_from,ts_to])
 
-        items_string = self.request.GET.get('items', None)
-        if items_string:
-            item_strings = items_string.split(',')
-            items = []
-            for item in item_strings:
-                items.append(int(item))
-            if items:
-                in_items = Q(item_id__in=items)
-                return models.Log_Value.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+        if chart_type == self.CT_USER:
+            return self.get_user_queryset(one_scheme, in_range, data)
+        elif chart_type == self.CT_DIG_TYPE:
+            return self.get_dig_type_queryset(one_scheme, in_range, int(data))
+        if chart_type == self.CT_DEVICE_ITEM_TYPE:
+            return self.get_device_item_type_queryset(one_scheme, in_range, data)
+        if chart_type == self.CT_DEVICE_ITEM:
+            return self.get_device_item_queryset(one_scheme, in_range, data)
 
-        itemtypes_string = self.request.GET.get('itemtypes', None)
-        if itemtypes_string:
-            item_strings = itemtypes_string.split(',')
-            items = []
-            for item in item_strings:
-                items.append(int(item))
-            if items:
-                in_items = Q(item__type_id__in=items)
-                return models.Log_Value.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+        return None
 
-        group_type = int(self.request.GET.get('group_type', 0))
-        in_items = Q(item__type__group_type_id=group_type)
-        return models.Log_Value.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+    def get_user_queryset(self, q_scheme, q_time, data):
+        return None
+
+    def get_dig_type_queryset(self, q_scheme, q_time, group_type_id):
+        in_items = Q(item__type__group_type_id=group_type_id)
+        return models.Log_Value.objects.filter(q_time & in_items & q_scheme).order_by('timestamp_msecs')
+
+    def get_device_item_type_queryset(self, q_scheme, q_time, itemtypes_string):
+        item_strings = itemtypes_string.split(',')
+        items = []
+        for item in item_strings:
+            items.append(int(item))
+        if items:
+            in_items = Q(item__type_id__in=items)
+            return models.Log_Value.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+        return None
+
+    def get_device_item_queryset(self, q_scheme, q_time, items_string):
+        item_strings = items_string.split(',')
+        items = []
+        for item in item_strings:
+            items.append(int(item))
+        if items:
+            in_items = Q(item_id__in=items)
+            return models.Log_Value.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+        return None
+
+
 # ------------------- END Logs -------------------------
 
 class Scheme_Detail_View_Set(viewsets.ViewSet):
