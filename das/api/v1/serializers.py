@@ -44,6 +44,9 @@ class DIG_Param_Type_Serializer(serializers.ModelSerializer):
         model = models.DIG_Param_Type
         fields = ('id', 'name', 'title', 'description', 'value_type', 'group_type_id', 'parent_id')
 
+def param_normalize():
+    pass
+
 class DIG_Param_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
 
@@ -299,12 +302,13 @@ class Log_Value_Serializer(serializers.ModelSerializer):
         return normalize_value(obj.raw_value)
 
     item = LDS2_Device_Item(many=False)
+
     class Meta:
         model = models.Log_Value
         fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
 
-class Chart_Data_Serializer(serializers.ModelSerializer):
+class Chart_Value_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
     raw_value = serializers.SerializerMethodField()
 
@@ -317,6 +321,16 @@ class Chart_Data_Serializer(serializers.ModelSerializer):
     class Meta:
         model = models.Log_Value
         fields = ('timestamp_msecs', 'item_id', 'raw_value', 'value')
+
+class Chart_Param_Serializer(serializers.ModelSerializer):
+    value = serializers.SerializerMethodField()
+
+    def get_value(self, obj):
+        return normalize_value(obj.value)
+    
+    class Meta:
+        model = models.Log_Param
+        fields = ('timestamp_msecs', 'group_param_id', 'value')
 
 class Code_Item_Serializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
