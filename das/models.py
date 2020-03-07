@@ -175,6 +175,7 @@ class Device_Item_Type(Titled_Model):
     RT_HOLDING_REGISTERS = 4
     RT_FILE = 5
     RT_SIMPLE_BUTTON = 6
+    RT_VIDEO_STREAM = 7
     
     Register_Types = (
         (RT_DISCRETE_INPUTS,   'DiscreteInputs'),
@@ -183,6 +184,7 @@ class Device_Item_Type(Titled_Model):
         (RT_HOLDING_REGISTERS, 'HoldingRegisters'),
         (RT_FILE,              'File'),
         (RT_SIMPLE_BUTTON,     'SimpleButton'),
+        (RT_VIDEO_STREAM,      'VideoStream'),
     )
     register_type = models.SmallIntegerField(choices=Register_Types, default=RT_INPUT_REGISTERS)
     
