@@ -43,7 +43,7 @@ def get_doc(scheme_id, items, tzinfo, ts_from, ts_to, hide_null):
     cursor = connection.cursor()
 
     cursor.execute("""
-        SELECT s.id, s.name, it.id, it.title, l.timestamp_msecs, l.value FROM das_log_data l 
+        SELECT s.id, s.name, it.id, it.title, l.timestamp_msecs, l.value FROM das_log_value l 
         LEFT JOIN das_device_item di ON l.item_id = di.id 
         LEFT JOIN das_device_item_type it ON di.type_id = it.id 
         LEFT JOIN das_device_item_group g ON di.group_id = g.id 
