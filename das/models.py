@@ -1,7 +1,7 @@
 import uuid
 
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group as User_Group
 #from django.conf import settings
 
 class User(AbstractUser):
@@ -338,3 +338,42 @@ class Log_Param(DIG_Param_Value_Base):
 class Translation(Schemed_Model):
     lang = models.CharField(max_length=64)
     data = models.TextField()
+
+class Node(Schemed_Model):
+    name = models.CharField(max_length=64, null=True)
+    parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.CASCADE, related_name='childs')
+
+    T_ROOT    = 1
+    T_SECTION = 2
+    T_GROUP   = 3
+    T_ITEM    = 4
+    T_CHILD   = 5
+    T_PARAM   = 6
+    
+    Types = (
+        (T_ROOT,    'Root'),
+        (T_SECTION, 'Section'),
+        (T_GROUP,   'Group'),
+        (T_ITEM,    'Item'),
+        (T_CHILD,   'Child'),
+        (T_PARAM,   'Param'),
+    )
+    type_id = models.SmallIntegerField(choices=Types, default=T_ROOT)
+
+class Disabled_Param(Schemed_Model):
+    group = models.ForeignKey(User_Group, on_delete=models.CASCADE)
+    param = models.ForeignKey(DIG_Param_Type, on_delete=models.CASCADE)
+
+class Disabled_Status(Schemed_Model):
+    group = models.ForeignKey(User_Group, on_delete=models.CASCADE)
+    status = models.ForeignKey(DIG_Status_Type, on_delete=models.CASCADE)
+
+class Chart(Schemed_Model):
+    name = models.CharField(max_length=64)
+
+class Chart_Item(Schemed_Model):
+    color = models.CharField(max_length=10)
+    chart = models.ForeignKey(Chart, on_delete=models.CASCADE)
+    item = models.ForeignKey(Device_Item, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    param = models.ForeignKey(DIG_Param, on_delete=models.CASCADE, blank=True, null=True, default=None)
+

@@ -335,6 +335,10 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
         dig_param_type_qset = models.DIG_Param_Type.objects.filter(scheme_id=scheme_id)
         dig_param_type_srlz = api_serializers.DIG_Param_Type_Serializer(dig_param_type_qset, many=True)
 
+        user_group_list = list(request.user.groups.values_list('id', flat=True))
+        disabled_param_qset = models.Disabled_Param.objects.filter(scheme_id=scheme_id, group_id__in=user_group_list)
+        disabled_param_list = list(disabled_param_qset.values_list('param_id', flat=True))
+
         scheme.last_usage = timezone.now()
         scheme.save()
         
@@ -386,7 +390,8 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
             'dig_type': dig_type_srlz.data,
             'dig_mode_type': dig_mode_type_srlz.data,
             'dig_status_category': dig_status_category_srlz.data,
-            'dig_status_type': dig_status_type_srlz.data
+            'dig_status_type': dig_status_type_srlz.data,
+            'disabled_param': disabled_param_list
             })
 
     def translate_sections(self, sections, sections_tr, groups_tr):        
