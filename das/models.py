@@ -142,7 +142,7 @@ class Device_Item_Group(Schemed_Model):
     section = models.ForeignKey(Section, related_name='groups', on_delete=models.CASCADE) # deprecated | rename to parent
 
 class Log_Base(Schemed_Model):
-    timestamp_msecs = models.BigIntegerField()
+    timestamp_msecs = models.BigIntegerField(db_index=True)
     user_id = models.IntegerField(blank=True, null=True, default=None)
     class Meta:
         abstract = True
