@@ -66,22 +66,26 @@ class Code(models.Model):
     name = models.CharField(max_length=64, default='')
     text = models.TextField()
 
-class Tg_Subscriber(models.Model):
-    group = models.ForeignKey(Scheme_Group, on_delete=models.CASCADE)
-    chat_id = models.BigIntegerField()
-
 class Tg_User(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, default=None)
     first_name = models.CharField(max_length=64, default='', blank=True)
     last_name = models.CharField(max_length=64, default='', blank=True)
     user_name = models.CharField(max_length=32)
     lang = models.CharField(max_length=16)
-    private_chat_id = models.BigIntegerField(blank=True, null=True, default=None)
+    private_chat_id = models.BigIntegerField(blank=True, null=True, default=None) # deprecated
+
+class Tg_Chat(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    admin = models.ForeignKey(Tg_User, on_delete=models.SET_NULL, blank=True, null=True, default=None)
 
 class Tg_Auth(models.Model):
     tg_user = models.OneToOneField(Tg_User, on_delete=models.CASCADE, primary_key=True, related_name='auth')
     expired = models.BigIntegerField()
     token = models.CharField(max_length=512)
+
+class Tg_Subscriber(models.Model):
+    group = models.ForeignKey(Scheme_Group, on_delete=models.CASCADE)
+    chat_id = models.BigIntegerField()
 
 # -------------------------------------------------------------
 
