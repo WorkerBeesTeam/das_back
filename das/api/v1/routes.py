@@ -10,6 +10,7 @@ api_router.register('scheme_group', viewsets.Scheme_Group_View_Set, basename='sc
 api_router.register('scheme', viewsets.Scheme_View_Set, basename='scheme')
 api_router.register('log_event', viewsets.Log_Event_View_Set, basename='log_event')
 api_router.register('log_value', viewsets.Log_Value_View_Set, basename='log_value')
+api_router.register('chart', viewsets.Chart_View_Set, basename='chart')
 api_router.register('chart_value', viewsets.Chart_Value_View_Set, basename='chart_data')
 api_router.register('chart_param', viewsets.Chart_Param_View_Set, basename='chart_param')
 api_router.register('detail', viewsets.Scheme_Detail_View_Set, basename='detail')

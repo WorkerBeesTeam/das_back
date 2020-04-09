@@ -373,7 +373,7 @@ class Chart(Schemed_Model):
 
 class Chart_Item(Schemed_Model):
     color = models.CharField(max_length=10)
-    chart = models.ForeignKey(Chart, on_delete=models.CASCADE)
+    chart = models.ForeignKey(Chart, on_delete=models.CASCADE, related_name='items')
     item = models.ForeignKey(Device_Item, on_delete=models.CASCADE, blank=True, null=True, default=None)
     param = models.ForeignKey(DIG_Param, on_delete=models.CASCADE, blank=True, null=True, default=None)
 
