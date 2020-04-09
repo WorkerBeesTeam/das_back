@@ -273,6 +273,13 @@ class DIG_Status_Type(Schemed_Model):
     text = models.CharField(max_length=512)
     inform = models.BooleanField(default=True)
 
+    def __str__(self):
+        res = ''
+        if self.group_type:
+            res += self.group_type.name + ': '
+        res += self.name
+        return res
+
 class DIG_Status_Base(Log_Base):
     group = models.ForeignKey(Device_Item_Group, on_delete=models.CASCADE)
     status = models.ForeignKey(DIG_Status_Type, on_delete=models.CASCADE)
@@ -319,6 +326,15 @@ class DIG_Param_Type(Titled_Model):
         (VT_COMBO,  'Combo'),
     )
     value_type = models.SmallIntegerField(choices=Value_Types, default=VT_BYTES)
+
+    def __str__(self):
+        res = ''
+        if self.group_type:
+            res += self.group_type.name + ': '
+        if self.parent:
+            res += self.parent.name + ' - '
+        res += self.name
+        return res
     
 class DIG_Param(Schemed_Model):
     # parent нужен для того что бы можно было использовать один DIG_Param_Type для многих ParamValue и
@@ -368,9 +384,15 @@ class Disabled_Param(Schemed_Model):
     group = models.ForeignKey(User_Group, on_delete=models.CASCADE)
     param = models.ForeignKey(DIG_Param_Type, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.group.name + ' | ' + str(self.param)
+
 class Disabled_Status(Schemed_Model):
     group = models.ForeignKey(User_Group, on_delete=models.CASCADE)
     status = models.ForeignKey(DIG_Status_Type, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.group.name + ' | ' + str(self.status)
 
 class Chart(Schemed_Model):
     name = models.CharField(max_length=64)
