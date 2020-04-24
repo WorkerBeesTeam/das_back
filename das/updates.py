@@ -1,5 +1,10 @@
 import re
+import os
 import json
+
+from wsgiref.util import FileWrapper
+
+from django.http import HttpResponse
 from django.urls import path
 from django.conf import settings
 
@@ -15,6 +20,14 @@ def check_update_accepted(name):
             if pattern and re.match(pattern, name):
                 return True
     return False
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def updates_check(req):
     ver_file = open(settings.MEDIA_ROOT + '/version.json', 'rb')

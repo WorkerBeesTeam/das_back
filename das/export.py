@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_list_or_404
+from django.views.decorators.http import require_POST
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import timezone
+
+from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer #, ValidationError
 
 import pytz
 import datetime
@@ -11,7 +14,7 @@ try:
 except ImportError:
     from openpyxl.utils import get_column_letter
 
-from .models import Logs
+from . import models
 
 def init_excel():
     return openpyxl.Workbook()
@@ -25,37 +28,31 @@ def parse_conf(req):
 
     hide_null = 'hide_null' in data and data['hide_null']
 
-    types = []
-    for item in data['items']:
-        id = int(item)
-        if not id in types:
-            types.append(id)
-    if not types:
+    items = { int(id) for id in data['items'] }
+    if not items:
         raise
 
-    projects = req.user.employee.team.in_team.filter(id__in=data['projects'])
-    if not projects:
-        raise
-    return tzinfo, ts_from, ts_to, hide_null, types, projects
+    schemes = get_list_or_404(models.Scheme, groups__scheme_group_user__user_id=req.user.id, id__in=data['schemes'])
+    return tzinfo, ts_from, ts_to, hide_null, items, schemes
 
-def get_doc(conn_name, types, tzinfo, ts_from, ts_to, hide_null):
+def get_doc(scheme_id, items, tzinfo, ts_from, ts_to, hide_null):
     from collections import OrderedDict
     doc = {}
 
-    from django.db import connections
-    cursor = connections[conn_name].cursor()
+    from django.db import connection
+    cursor = connection.cursor()
 
     cursor.execute("""
-        SELECT s.id, s.name, it.id, it.title, l.timestamp_msecs, l.value FROM scheme_log_data l 
-        LEFT JOIN scheme_deviceitem di ON l.item_id = di.id 
-        LEFT JOIN scheme_itemtype it ON di.type_id = it.id 
-        LEFT JOIN scheme_group g ON di.group_id = g.id 
-        LEFT JOIN scheme_section s ON g.section_id = s.id 
-        WHERE di.type_id IN ({0}) AND l.timestamp_msecs >= '{1}' AND l.timestamp_msecs <= '{2}' 
+        SELECT s.id, s.name, it.id, it.title, l.timestamp_msecs, l.value FROM das_log_value l 
+        LEFT JOIN das_device_item di ON l.item_id = di.id 
+        LEFT JOIN das_device_item_type it ON di.type_id = it.id 
+        LEFT JOIN das_device_item_group g ON di.group_id = g.id 
+        LEFT JOIN das_section s ON g.section_id = s.id 
+        WHERE l.scheme_id = {0} AND di.type_id IN ({1}) AND l.timestamp_msecs >= '{2}' AND l.timestamp_msecs <= '{3}'
         ORDER BY l.timestamp_msecs DESC;
-    """.format(",".join(map(str,types)), ts_from, ts_to))
+    """.format(scheme_id, ",".join(map(str,items)), ts_from, ts_to))
     rawData = cursor.fetchall()
-    #items = Logs.objects.using(conn_name).filter(item__type_id__in=types, date__range=[from_str, to_str]).order_by('date')
+    #items = Log_Data.objects.filter(item__type_id__in=items, date__range=[from_str, to_str]).order_by('date')
     #for item in items:
     for row in rawData:
 #        sct_id = item.item.group.section_id
@@ -240,28 +237,37 @@ def generate_sheet(ws, doc):
 
         col_num += col_len + 1
 
-# Create your views here.
-def export_log2excel(req, get_conn_name=None):
-    if True:
+
+@require_POST
+def export_excel(req):
+    auth = req.META.get('HTTP_AUTHORIZATION')
+    valid_data = VerifyJSONWebTokenSerializer().validate({'token': auth[4:]})
+    req.user = valid_data['user']
+
     #try:
-        if not get_conn_name:
-            get_conn_name = lambda p: 'default'
+    tzinfo, ts_from, ts_to, hide_null, items, schemes = parse_conf(req)
+    wb = init_excel()
+    empty_sheet = wb.active
 
-        tzinfo, ts_from, ts_to, hide_null, types, projects = parse_conf(req)
-        wb = init_excel()
-        empty_sheet = wb.active
+    scheme_len = 0
+    scheme_name = None
+    for scheme in schemes:
+        scheme_len += 1
+        scheme_name = scheme.name
+        doc = get_doc(scheme.id, items, tzinfo, ts_from, ts_to, hide_null)
 
-        for proj in projects:
-            conn_name = get_conn_name(proj)
-            doc = get_doc(conn_name, types, tzinfo, ts_from, ts_to, hide_null)
+        ws = wb.create_sheet(scheme.title[:31])
+        generate_sheet(ws, doc)
 
-            ws = wb.create_sheet(proj.title[:31])
-            generate_sheet(ws, doc)
+    get_ts_str = lambda ts: datetime.datetime.fromtimestamp(ts/1000).strftime('%d.%m.%Y_%H.%M')
+    file_name = (scheme_name + '__') if scheme_len == 1 else ''
+    file_name += get_ts_str(ts_from) + '__' + get_ts_str(ts_to)
 
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="{0}.xlsx"'.format(conn_name)
-        wb.remove_sheet(empty_sheet)
-        wb.save(response)
-        return response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="{0}.xlsx"'.format(file_name)
+    wb.remove_sheet(empty_sheet)
+    wb.save(response)
+    return response
     #except:
     #    return HttpResponseBadRequest()
+

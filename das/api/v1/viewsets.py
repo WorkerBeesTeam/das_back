@@ -67,8 +67,7 @@ class Change_Password_View(generics.UpdateAPIView):
                 return Response("New password is the same of old_password", status=status.HTTP_200_OK) # HTTP_400_BAD_REQUEST
             # set_password also hashes the password that the user will get
             self.object.set_password(serializer.data.get("new_password"))
-            self.object.employee.need_to_change_password = False
-            self.object.employee.save()
+            self.object.need_to_change_password = False
             self.object.save()
             return Response("Success.", status=status.HTTP_200_OK)
 
@@ -221,13 +220,13 @@ class LDVS2_Filter(django_filters.FilterSet):
     item__group__section__name = django_filters.NumberFilter()
 
     class Meta:
-        model = models.Log_Data
+        model = models.Log_Value
         #fields = ['name', 'title', 'description','address','city','company','city__id','company__id']
         fields = ['timestamp_msecs', 'min_ts', 'max_ts', 'item__type__title', 'item__name', 'item__group__title', 'item__group__type__title', 'item__group__section__name','item__group_id']
 
-class Log_Data_View_Set_2(viewsets.ModelViewSet): 
+class Log_Value_View_Set(viewsets.ModelViewSet): 
 #    queryset = models.EventLog.objects.filter(scheme_id=scheme.id)
-    serializer_class = api_serializers.Log_Data_Serializer_2
+    serializer_class = api_serializers.Log_Value_Serializer
     filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
     filter_class = LDVS2_Filter
     filterset_class = LDVS2_Filter
@@ -242,11 +241,11 @@ class Log_Data_View_Set_2(viewsets.ModelViewSet):
             if pk_from != 0 and pk_to != 0:
                 in_range = Q(timestamp_msecs__range=[ts_from,ts_to])
                 one_scheme = Q(scheme_id=scheme.id)
-                return models.Log_Data.objects.filter(in_range & one_scheme)
+                return models.Log_Value.objects.filter(in_range & one_scheme)
         except:
             pass
 
-        return models.Log_Data.objects.filter(scheme_id=scheme.id)
+        return models.Log_Value.objects.filter(scheme_id=scheme.id)
 
 # ------------------- Logs -------------------------
 def devitem_types(request):
@@ -259,44 +258,54 @@ def device_items(req):
     scheme_id = scheme.parent_id if scheme.parent_id else scheme.id
     return models.DeviceItem.objects.filter(scheme_id=scheme_id)
 
-class Log_Data_View_Set(viewsets.ModelViewSet): 
-    serializer_class = api_serializers.Log_Data_Serializer
+class Chart_View_Set(viewsets.ModelViewSet):
+    serializer_class = api_serializers.Chart_Serializer
+    pagination_class = None
+    def get_queryset(self):
+        scheme = get_scheme(self.request)
+        scheme_id = scheme.parent_id if scheme.parent_id else scheme.id
+        return models.Chart.objects.filter(scheme_id=scheme_id)
+
+class Chart_Value_View_Set(viewsets.ModelViewSet): 
+    serializer_class = api_serializers.Chart_Value_Serializer
 #    filter_backends = (filters.OrderingFilter,)
 #    permission_classes = (AllowAny,)
+
+    CT_USER = 1
+    CT_DIG_TYPE = 2
+    CT_DEVICE_ITEM_TYPE = 3
+    CT_DEVICE_ITEM = 4
+
     def get_queryset(self):
-#        from applications import add_db_to_connections
-#        add_db_to_connections('baltika0')
-#        return models.Logs.objects.all()
+        data = self.request.GET['data']
+        items = self.get_id_list(data)
+
         scheme = get_scheme(self.request)
-        one_scheme = Q(scheme_id=scheme.id)
+        q_scheme = Q(scheme_id=scheme.id)
 
-        ts_from = self.request.GET.get('ts_from', '')
-        ts_to = self.request.GET.get('ts_to', '')
-        in_range = Q(timestamp_msecs__range=[ts_from,ts_to])
+        ts_from = self.request.GET['ts_from']
+        ts_to = self.request.GET['ts_to']
+        q_time = Q(timestamp_msecs__range=[ts_from,ts_to])
+        return self.get_typed_queryset(q_scheme, q_time, items)
 
-        items_string = self.request.GET.get('items', None)
-        if items_string:
-            item_strings = items_string.split(',')
-            items = []
-            for item in item_strings:
-                items.append(int(item))
-            if items:
-                in_items = Q(item_id__in=items)
-                return models.Log_Data.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+    def get_typed_queryset(self, q_scheme, q_time, items):
+        in_items = Q(item_id__in=items)
+        return models.Log_Value.objects.filter(q_time & in_items & q_scheme).order_by('timestamp_msecs')
 
-        itemtypes_string = self.request.GET.get('itemtypes', None)
-        if itemtypes_string:
-            item_strings = itemtypes_string.split(',')
-            items = []
-            for item in item_strings:
-                items.append(int(item))
-            if items:
-                in_items = Q(item__type_id__in=items)
-                return models.Log_Data.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+    def get_id_list(self, data):
+        item_strings = data.split(',')
+        id_list = [int(i_id) for i_id in item_strings]
+        if not id_list:
+            raise RuntimeError
+        return id_list
 
-        group_type = int(self.request.GET.get('group_type', 0))
-        in_items = Q(item__type__group_type_id=group_type)
-        return models.Log_Data.objects.filter(in_range & in_items & one_scheme).order_by('timestamp_msecs')
+class Chart_Param_View_Set(Chart_Value_View_Set): 
+    serializer_class = api_serializers.Chart_Param_Serializer
+
+    def get_typed_queryset(self, q_scheme, q_time, items):
+        in_items = Q(group_param_id__in=items)
+        return models.Log_Param.objects.filter(q_time & in_items & q_scheme).order_by('timestamp_msecs')
+
 # ------------------- END Logs -------------------------
 
 class Scheme_Detail_View_Set(viewsets.ViewSet):
@@ -316,8 +325,8 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
         dig_type_qset = models.DIG_Type.objects.filter(scheme_id=scheme_id)
         dig_type_srlz = api_serializers.DIG_Type_Serializer(dig_type_qset, many=True)
 
-        dig_mode_qset = models.DIG_Mode.objects.filter(scheme_id=scheme_id)
-        dig_mode_srlz = api_serializers.DIG_Mode_Serializer(dig_mode_qset, many=True)
+        dig_mode_type_qset = models.DIG_Mode_Type.objects.filter(scheme_id=scheme_id)
+        dig_mode_type_srlz = api_serializers.DIG_Mode_Type_Serializer(dig_mode_type_qset, many=True)
         
         device_item_type_qset = models.Device_Item_Type.objects.filter(scheme_id=scheme_id)
         device_item_type_srlz = api_serializers.Device_Item_Type_Serializer(device_item_type_qset, many=True)
@@ -333,6 +342,10 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
 
         dig_param_type_qset = models.DIG_Param_Type.objects.filter(scheme_id=scheme_id)
         dig_param_type_srlz = api_serializers.DIG_Param_Type_Serializer(dig_param_type_qset, many=True)
+
+        user_group_list = list(request.user.groups.values_list('id', flat=True))
+        disabled_param_qset = models.Disabled_Param.objects.filter(scheme_id=scheme_id, group_id__in=user_group_list)
+        disabled_param_list = list(disabled_param_qset.values_list('param_id', flat=True))
 
         scheme.last_usage = timezone.now()
         scheme.save()
@@ -356,8 +369,8 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
                 dig_type_tr = translations_dict.get('dig_type', None)
                 self.translate_objs(dig_type_srlz.data, dig_types_tr, 'title', 'description')
   
-                dig_mode_tr = translations_dict.get('dig_mode', None)
-                self.translate_objs(dig_mode_srlz.data, dig_mode_tr, 'title')
+                dig_mode_type_tr = translations_dict.get('dig_mode_type', None)
+                self.translate_objs(dig_mode_type_srlz.data, dig_mode_type_tr, 'title')
 
                 device_item_type_tr = translations_dict.get('device_item_type', None)
                 self.translate_objs(device_item_type_srlz.data, device_item_types_tr, 'title')
@@ -376,6 +389,7 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
 
         return Response({
             'id': scheme.id,
+            'parent_id': scheme.parent_id,
             'title': scheme.title,
             'sign_type': sign_type_srlz.data,
             'section': section_srlz.data,
@@ -383,9 +397,10 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
             'device_item_type': device_item_type_srlz.data,
             'dig_param_type': dig_param_type_srlz.data,
             'dig_type': dig_type_srlz.data,
-            'dig_mode': dig_mode_srlz.data,
+            'dig_mode_type': dig_mode_type_srlz.data,
             'dig_status_category': dig_status_category_srlz.data,
-            'dig_status_type': dig_status_type_srlz.data
+            'dig_status_type': dig_status_type_srlz.data,
+            'disabled_param': disabled_param_list
             })
 
     def translate_sections(self, sections, sections_tr, groups_tr):        
