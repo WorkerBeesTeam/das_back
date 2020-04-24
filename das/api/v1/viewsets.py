@@ -389,6 +389,7 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
 
         return Response({
             'id': scheme.id,
+            'parent_id': scheme.parent_id,
             'title': scheme.title,
             'sign_type': sign_type_srlz.data,
             'section': section_srlz.data,
