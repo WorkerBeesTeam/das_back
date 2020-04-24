@@ -258,6 +258,14 @@ def device_items(req):
     scheme_id = scheme.parent_id if scheme.parent_id else scheme.id
     return models.DeviceItem.objects.filter(scheme_id=scheme_id)
 
+class Chart_View_Set(viewsets.ModelViewSet):
+    serializer_class = api_serializers.Chart_Serializer
+    pagination_class = None
+    def get_queryset(self):
+        scheme = get_scheme(self.request)
+        scheme_id = scheme.parent_id if scheme.parent_id else scheme.id
+        return models.Chart.objects.filter(scheme_id=scheme_id)
+
 class Chart_Value_View_Set(viewsets.ModelViewSet): 
     serializer_class = api_serializers.Chart_Value_Serializer
 #    filter_backends = (filters.OrderingFilter,)
@@ -381,6 +389,7 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
 
         return Response({
             'id': scheme.id,
+            'parent_id': scheme.parent_id,
             'title': scheme.title,
             'sign_type': sign_type_srlz.data,
             'section': section_srlz.data,

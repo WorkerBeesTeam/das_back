@@ -97,7 +97,7 @@ class DIG_Status_Serializer(serializers.ModelSerializer):
         model = models.DIG_Status
         fields = ('status_id', 'args')
 
-class Device_Item_Group_Serializer(serializers.ModelSerializer):
+class DIG_Serializer(serializers.ModelSerializer):
     params = DIG_Param_Serializer(many=True, read_only=True)
     statuses = serializers.SerializerMethodField()
     mode = serializers.SerializerMethodField()
@@ -169,7 +169,7 @@ class DIG_Status_Type_Serializer(serializers.ModelSerializer):
         fields = ('id', 'group_type_id', 'category_id', 'name', 'text', 'inform')
 
 class Section_Serializer(serializers.ModelSerializer):
-    groups = Device_Item_Group_Serializer(many=True, read_only=True)
+    groups = DIG_Serializer(many=True, read_only=True)
     
     class Meta:
         model = models.Section
@@ -307,6 +307,16 @@ class Log_Value_Serializer(serializers.ModelSerializer):
         model = models.Log_Value
         fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
+class Chart_Item_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Chart_Item
+        fields = ('color', 'item_id', 'param_id')
+
+class Chart_Serializer(serializers.ModelSerializer):
+    items = Chart_Item_Serializer(many=True, read_only=True)
+    class Meta:
+        model = models.Chart
+        fields = ('id', 'name', 'items')
 
 class Chart_Value_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()
