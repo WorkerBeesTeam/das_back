@@ -1,4 +1,5 @@
 import json
+from django.http import HttpResponse
 from django.contrib.auth.models import Permission
 
 from rest_framework import serializers
@@ -61,8 +62,8 @@ def tg_auth(req):
     try:
         json_data = json.loads(req.body.decode('utf-8'))
         token = json_data["token"]
-        auth = list_models.Tg_Auth.objects.get(token=token)
-    except (list_models.Tg_Auth.DoesNotExist, KeyError) as e:
+        auth = models.Tg_Auth.objects.get(token=token)
+    except (models.Tg_Auth.DoesNotExist, KeyError) as e:
         return HttpResponse("Bad request: " + str(e), status=400)
     
     auth.tg_user.user = req.user
