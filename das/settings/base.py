@@ -1,7 +1,7 @@
 import environ
 
 project_root = environ.Path(__file__) - 3  
-env = environ.Env(DEBUG=(bool, False),)  
+env = environ.Env(DEBUG=(bool, False),LOG_FILE=(str, ''))  
 
 CURRENT_ENV = 'dev' # 'dev' is the default environment
 import builtins
@@ -138,40 +138,39 @@ AUTH_USER_MODEL = 'das.User'
 
 WSGI_APPLICATION = 'das.wsgi.application'
 
+LOGGING = None
+
 LOG_FILE = env('LOG_FILE')
-
-LOGGING = {
-    'version': 1,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+if LOG_FILE:
+    LOGGING = {
+        'version': 1,
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
         },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            },
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': LOG_FILE,
+                'formatter': 'simple'
+            },
         },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'simple'
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': True,
-        },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'DEBUG' if DEBUG else 'INFO',
+                'propagate': True,
+            },
+        }
     }
-}
-
-if not LOG_FILE:
-    LOGGING = None
 
