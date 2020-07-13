@@ -2,6 +2,9 @@ import re
 import os
 import json
 
+import logging
+logger = logging.getLogger(__name__)
+
 from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
@@ -46,6 +49,7 @@ def updates_check(req):
         print('error')
         cur_ver = '?'
     print("Check version: {0} from: {1} {2} current: {3}".format(client_ver, name, get_client_ip(req), cur_ver))
+    logger.info("Check version: {0} from: {1} {2} current: {3}".format(client_ver, name, get_client_ip(req), cur_ver))
 
     try:
         h = models.Scheme.objects.get(name=name)
