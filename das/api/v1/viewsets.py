@@ -271,6 +271,8 @@ class Chart_Value_View_Set(viewsets.ModelViewSet):
 #    filter_backends = (filters.OrderingFilter,)
 #    permission_classes = (AllowAny,)
 
+    items_field_name = 'item_id'
+
     CT_USER = 1
     CT_DIG_TYPE = 2
     CT_DEVICE_ITEM_TYPE = 3
@@ -283,14 +285,51 @@ class Chart_Value_View_Set(viewsets.ModelViewSet):
         scheme = get_scheme(self.request)
         q_scheme = Q(scheme_id=scheme.id)
 
-        ts_from = self.request.GET['ts_from']
-        ts_to = self.request.GET['ts_to']
-        q_time = Q(timestamp_msecs__range=[ts_from,ts_to])
-        return self.get_typed_queryset(q_scheme, q_time, items)
+        ts_from = int(self.request.GET['ts_from'])
+        ts_to = int(self.request.GET['ts_to'])
 
-    def get_typed_queryset(self, q_scheme, q_time, items):
-        in_items = Q(item_id__in=items)
-        return models.Log_Value.objects.filter(q_time & in_items & q_scheme).order_by('timestamp_msecs')
+        qset = self.get_first_point_qset(items, q_scheme, ts_from)
+        qset |= list(self.get_data_qset(ts_from, ts_to, items, q_scheme))
+#        qset |= self.get_last_point_qset(items, q_scheme, ts_to)
+        return qset
+
+    def get_first_point_qset(self, items, q_scheme, ts_from):
+        q_time = Q(timestamp_msecs__lt=ts_from)
+        return self.get_point_qset(items, q_scheme, q_time, '-')
+
+    def get_last_point_qset(self, items, q_scheme, ts_to):
+        q_time = Q(timestamp_msecs__gt=ts_to)
+        return self.get_point_qset(items, q_scheme, q_time)
+
+    def get_point_qset(self, items, q_scheme, q_time, order_prefix=''):
+        model = self.serializer_class.Meta.model
+        qset = model.objects.none()
+#        return qset
+
+    # this is not working: NotSupportedError: (1235, "This version of MariaDB doesn't yet support 'LIMIT & IN/ALL/ANY/SOME subquery'")
+        for item_id in items:
+            q_item = self.get_item_q(item_id)
+            qset |= list(model.objects.filter(q_scheme & q_item & q_time).order_by(order_prefix + 'timestamp_msecs')[0:1])
+        return qset
+
+    def get_data_qset(self, ts_from, ts_to, items, q_scheme):
+        model = self.serializer_class.Meta.model
+
+        q_time = Q(timestamp_msecs__range=[ts_from,ts_to])
+        in_items = self.get_in_items_q(items)
+        return model.objects.filter(q_time & in_items & q_scheme).order_by('timestamp_msecs')
+
+    def get_in_items_q(self, items):
+        return self.get_item_field_q('__in', items)
+
+    def get_item_q(self, item_id):
+        return self.get_item_field_q('', item_id)
+
+    def get_item_field_q(self, postfix, value):
+        arg_name = self.items_field_name + postfix
+        args = {}
+        args[arg_name] = value
+        return Q(**args)
 
     def get_id_list(self, data):
         item_strings = data.split(',')
@@ -301,10 +340,7 @@ class Chart_Value_View_Set(viewsets.ModelViewSet):
 
 class Chart_Param_View_Set(Chart_Value_View_Set): 
     serializer_class = api_serializers.Chart_Param_Serializer
-
-    def get_typed_queryset(self, q_scheme, q_time, items):
-        in_items = Q(group_param_id__in=items)
-        return models.Log_Param.objects.filter(q_time & in_items & q_scheme).order_by('timestamp_msecs')
+    items_field_name = 'group_param_id'
 
 # ------------------- END Logs -------------------------
 

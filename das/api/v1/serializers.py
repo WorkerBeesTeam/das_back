@@ -330,7 +330,7 @@ class Chart_Value_Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Log_Value
-        fields = ('timestamp_msecs', 'item_id', 'raw_value', 'value')
+        fields = ('timestamp_msecs', 'item_id', 'raw_value', 'value', 'user_id')
 
 class Chart_Param_Serializer(serializers.ModelSerializer):
     value = serializers.SerializerMethodField()

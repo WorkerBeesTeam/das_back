@@ -240,7 +240,7 @@ class Log_Value(Device_Item_Value_Base):
 
 class Log_Event(Log_Base):
     category = models.CharField(max_length=64)
-    text = models.CharField(max_length=1024)
+    text = models.TextField()
     
     ET_DEBUG = 0
     ET_INFO = 4
@@ -388,8 +388,9 @@ class Disabled_Param(Schemed_Model):
         return self.group.name + ' | ' + str(self.param)
 
 class Disabled_Status(Schemed_Model):
-    group = models.ForeignKey(User_Group, on_delete=models.CASCADE)
-    status = models.ForeignKey(DIG_Status_Type, on_delete=models.CASCADE)
+    group = models.ForeignKey(User_Group, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    dig = models.ForeignKey(Device_Item_Group, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    status = models.ForeignKey(DIG_Status_Type, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.group.name + ' | ' + str(self.status)
