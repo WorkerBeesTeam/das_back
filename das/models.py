@@ -31,6 +31,12 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+class Help(models.Model):
+    name = models.CharField(max_length=256)
+    text = models.TextField()
+    def __str__(self):
+        return self.name
+
 class Scheme(models.Model):
     parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name='children')
     groups = models.ManyToManyField(Scheme_Group, related_name='in_group')
