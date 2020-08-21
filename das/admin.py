@@ -27,6 +27,7 @@ admin.site.register(models.City)
 admin.site.register(models.Company)
 admin.site.register(models.Disabled_Param)
 admin.site.register(models.Disabled_Status)
+admin.site.register(models.Help)
 
 ## all other models
 # models = apps.get_models()
