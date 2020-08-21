@@ -32,6 +32,7 @@ class Company(models.Model):
         return self.name
 
 class Help(models.Model):
+    parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.CASCADE, related_name='childs')
     name = models.CharField(max_length=256)
     text = models.TextField()
     def __str__(self):
