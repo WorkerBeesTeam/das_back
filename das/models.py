@@ -31,13 +31,6 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
-class Help(models.Model):
-    parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.CASCADE, related_name='childs')
-    name = models.CharField(max_length=256)
-    text = models.TextField()
-    def __str__(self):
-        return self.name
-
 class Scheme(models.Model):
     parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name='children')
     groups = models.ManyToManyField(Scheme_Group, related_name='in_group')
@@ -106,6 +99,14 @@ class Titled_Model(Schemed_Model):
     title = models.CharField(null=True, max_length=64)
     class Meta:
         abstract = True
+
+class Help(models.Model):
+    parent = models.ForeignKey('self', blank=True, null=True, default=None, on_delete=models.CASCADE, related_name='childs')
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, blank=True, null=True)
+    name = models.CharField(max_length=256)
+    text = models.TextField()
+    def __str__(self):
+        return self.name
 
 class Plugin_Type(Schemed_Model):
     name = models.CharField(max_length=128)
