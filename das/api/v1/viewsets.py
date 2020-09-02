@@ -245,7 +245,7 @@ class Log_Value_View_Set(viewsets.ModelViewSet):
         except:
             pass
 
-        return models.Log_Value.objects.filter(scheme_id=scheme.id)
+        return models.Log_Value.objects.filter(scheme=scheme.id)
 
 # ------------------- Logs -------------------------
 def devitem_types(request):

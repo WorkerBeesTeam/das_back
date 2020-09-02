@@ -244,7 +244,8 @@ class Device_Item_Value(Device_Item_Value_Base):
         )
 
 class Log_Value(Device_Item_Value_Base):
-    pass
+    item = models.IntegerField(db_index=True, db_column='item_id')
+    scheme = models.IntegerField(db_index=True, db_column='scheme_id')
 
 class Log_Event(Log_Base):
     category = models.CharField(max_length=64)
