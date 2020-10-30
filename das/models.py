@@ -169,7 +169,8 @@ class DIG_Mode(DIG_Mode_Base):
     pass
 
 class Log_Mode(DIG_Mode_Base):
-    pass
+    class Meta:
+        managed = False
 
 class Sign_Type(Schemed_Model):
     name = models.CharField(max_length=10)
@@ -246,6 +247,8 @@ class Device_Item_Value(Device_Item_Value_Base):
 class Log_Value(Device_Item_Value_Base):
     item = models.IntegerField(db_index=True, db_column='item_id')
     scheme = models.IntegerField(db_index=True, db_column='scheme_id')
+    class Meta:
+        managed = False
 
 class Log_Event(Log_Base):
     category = models.CharField(max_length=64)
@@ -267,10 +270,13 @@ class Log_Event(Log_Base):
         (ET_USER,     'User'),
     )
     type_id = models.SmallIntegerField(choices=Event_Types, default=ET_INFO)
+    class Meta:
+        managed = False
     
-class Settings(Schemed_Model):
+class Settings(models.Model):
     param = models.CharField(max_length=64, primary_key=True)
     value = models.CharField(max_length=64)
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, null=True, default=None)
     
 class DIG_Status_Category(Titled_Model):
     color = models.CharField(max_length=16)
@@ -308,6 +314,8 @@ class Log_Status(DIG_Status_Base):
             (SD_DEL, 'Del'),
     )
     direction = models.SmallIntegerField(choices=Status_Direction)
+    class Meta:
+        managed = False
 
 class DIG_Param_Type(Titled_Model):
     description = models.CharField(max_length=512, blank=True, default='')
@@ -362,7 +370,8 @@ class DIG_Param_Value(DIG_Param_Value_Base):
     pass
 
 class Log_Param(DIG_Param_Value_Base):
-    pass
+    class Meta:
+        managed = False
 
 class Translation(Schemed_Model):
     lang = models.CharField(max_length=64)
