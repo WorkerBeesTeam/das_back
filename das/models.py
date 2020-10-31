@@ -169,6 +169,7 @@ class DIG_Mode(DIG_Mode_Base):
     pass
 
 class Log_Mode(DIG_Mode_Base):
+    timestamp_msecs = models.BigIntegerField(primary_key=True)
     class Meta:
         managed = False
 
@@ -245,12 +246,15 @@ class Device_Item_Value(Device_Item_Value_Base):
         )
 
 class Log_Value(Device_Item_Value_Base):
+    timestamp_msecs = models.BigIntegerField(primary_key=True)
     item = models.IntegerField(db_index=True, db_column='item_id')
     scheme = models.IntegerField(db_index=True, db_column='scheme_id')
     class Meta:
         managed = False
 
 class Log_Event(Log_Base):
+    timestamp_msecs = models.BigIntegerField(primary_key=True)
+
     category = models.CharField(max_length=64)
     text = models.TextField()
     
@@ -306,6 +310,7 @@ class DIG_Status(DIG_Status_Base):
     pass
 
 class Log_Status(DIG_Status_Base):
+    timestamp_msecs = models.BigIntegerField(primary_key=True)
     SD_ADD = 1
     SD_DEL = 2
 
@@ -370,6 +375,7 @@ class DIG_Param_Value(DIG_Param_Value_Base):
     pass
 
 class Log_Param(DIG_Param_Value_Base):
+    timestamp_msecs = models.BigIntegerField(primary_key=True)
     class Meta:
         managed = False
 
