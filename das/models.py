@@ -403,6 +403,12 @@ class Node(Schemed_Model):
         (T_PARAM,   'Param'),
     )
     type_id = models.SmallIntegerField(choices=Types, default=T_ROOT)
+    order = models.PositiveSmallIntegerField(default=0)
+
+class Value_View(Schemed_Model):
+    item_type = models.OneToOneField(Device_Item_Type, on_delete=models.CASCADE, primary_key=True)
+    value = models.TextField()
+    view = models.TextField()
 
 class Disabled_Param(Schemed_Model):
     group = models.ForeignKey(User_Group, on_delete=models.CASCADE)
