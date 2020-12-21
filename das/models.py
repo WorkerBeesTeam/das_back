@@ -406,7 +406,7 @@ class Node(Schemed_Model):
     order = models.PositiveSmallIntegerField(default=0)
 
 class Value_View(Schemed_Model):
-    type = models.OneToOneField(Device_Item_Type, on_delete=models.CASCADE)
+    type = models.ForeignKey(Device_Item_Type, on_delete=models.CASCADE)
     value = models.TextField()
     view = models.TextField()
 
