@@ -148,6 +148,11 @@ class Device_Item_Type_Serializer(serializers.ModelSerializer):
         model = models.Device_Item_Type
         fields = ('id', 'name', 'title', 'group_type_id', 'sign_id', 'register_type', 'save_algorithm', 'save_timer_id')
 
+class Value_View_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Value_View
+        fields = ('type_id', 'value', 'view')
+
 class Sign_Type_Serializer(serializers.ModelSerializer):
     class Meta:
         model = models.Sign_Type

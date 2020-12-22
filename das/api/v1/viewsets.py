@@ -383,6 +383,9 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
         disabled_param_qset = models.Disabled_Param.objects.filter(scheme_id=scheme_id, group_id__in=user_group_list)
         disabled_param_list = list(disabled_param_qset.values_list('param_id', flat=True))
 
+        value_view_qset = models.Value_View.objects.filter(scheme_id=scheme_id)
+        value_view_srlz = api_serializers.Value_View_Serializer(value_view_qset, many=True)
+
         scheme.last_usage = timezone.now()
         scheme.save()
         
@@ -436,6 +439,7 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
             'dig_mode_type': dig_mode_type_srlz.data,
             'dig_status_category': dig_status_category_srlz.data,
             'dig_status_type': dig_status_type_srlz.data,
+            'value_view': value_view_srlz.data,
             'disabled_param': disabled_param_list
             })
 
