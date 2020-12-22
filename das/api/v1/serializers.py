@@ -149,6 +149,14 @@ class Device_Item_Type_Serializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'title', 'group_type_id', 'sign_id', 'register_type', 'save_algorithm', 'save_timer_id')
 
 class Value_View_Serializer(serializers.ModelSerializer):
+    value = serializers.SerializerMethodField()
+    def get_value(self, obj):
+        return normalize_value(obj.value)
+
+    view = serializers.SerializerMethodField()
+    def get_value(self, obj):
+        return normalize_value(obj.view)
+
     class Meta:
         model = models.Value_View
         fields = ('type_id', 'value', 'view')
