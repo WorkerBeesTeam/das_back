@@ -154,7 +154,7 @@ class Value_View_Serializer(serializers.ModelSerializer):
         return normalize_value(obj.value)
 
     view = serializers.SerializerMethodField()
-    def get_value(self, obj):
+    def get_view(self, obj):
         return normalize_value(obj.view)
 
     class Meta:
