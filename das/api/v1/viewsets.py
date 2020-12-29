@@ -423,6 +423,14 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
                 dig_status_type_tr = translations_dict.get('dig_status_type', None)
                 self.translate_objs(dig_status_type_srlz.data, dig_status_type_tr, 'text')
 
+                value_view_tr = translations_dict.get('value_view', None)
+                if value_view_tr and len(value_view_tr):
+                    for vv in value_view_srlz.data:
+                        for vv_tr in value_view_tr:
+                            if vv.type_id == vv_tr.type_id:
+                                vv.view = vv_tr.view
+                                break
+
             except models.Translation.DoesNotExist:
                 print('Oops! There is no translation for \'' + current_lang + '\' language')
 
