@@ -406,13 +406,13 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
                 self.translate_objs(dig_param_type_srlz.data, dig_param_type_tr, 'title', 'description')
 
                 dig_type_tr = translations_dict.get('dig_type', None)
-                self.translate_objs(dig_type_srlz.data, dig_types_tr, 'title', 'description')
+                self.translate_objs(dig_type_srlz.data, dig_type_tr, 'title', 'description')
   
                 dig_mode_type_tr = translations_dict.get('dig_mode_type', None)
                 self.translate_objs(dig_mode_type_srlz.data, dig_mode_type_tr, 'title')
 
                 device_item_type_tr = translations_dict.get('device_item_type', None)
-                self.translate_objs(device_item_type_srlz.data, device_item_types_tr, 'title')
+                self.translate_objs(device_item_type_srlz.data, device_item_type_tr, 'title')
 
                 sign_type_tr = translations_dict.get('sign_type', None)
                 self.translate_objs(sign_type_srlz.data, sign_type_tr, 'name')
@@ -427,8 +427,8 @@ class Scheme_Detail_View_Set(viewsets.ViewSet):
                 if value_view_tr and len(value_view_tr):
                     for vv in value_view_srlz.data:
                         for vv_tr in value_view_tr:
-                            if vv.type_id == vv_tr.type_id:
-                                vv.view = vv_tr.view
+                            if vv['type_id'] == vv_tr['type_id']:
+                                vv['view'] = vv_tr['view']
                                 break
 
             except models.Translation.DoesNotExist:
