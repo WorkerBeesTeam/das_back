@@ -321,9 +321,11 @@ class Log_Value_Serializer(serializers.ModelSerializer):
         fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
 class Chart_Item_Serializer(serializers.ModelSerializer):
+    extra = serializers.JSONField()
+
     class Meta:
         model = models.Chart_Item
-        fields = ('color', 'item_id', 'param_id')
+        fields = ('extra', 'item_id', 'param_id')
 
 class Chart_Serializer(serializers.ModelSerializer):
     items = Chart_Item_Serializer(many=True, read_only=True)
