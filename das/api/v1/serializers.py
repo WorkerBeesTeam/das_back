@@ -164,17 +164,17 @@ class Value_View_Serializer(serializers.ModelSerializer):
 class Sign_Type_Serializer(serializers.ModelSerializer):
     class Meta:
         model = models.Sign_Type
-        fields = '__all__'
+        fields = ('id', 'name')
 
 class Plugin_Type_Serializer(serializers.ModelSerializer):
     class Meta:
         model = models.Plugin_Type
-        fields = '__all__'
+        fields = ('id', 'name', 'param_names_device', 'param_names_device_item')
 
 class DIG_Status_Category_Serializer(serializers.ModelSerializer):
     class Meta:
         model = models.DIG_Status_Category
-        fields = '__all__'
+        fields = ('id', 'name', 'title', 'color')
 
 class DIG_Status_Type_Serializer(serializers.ModelSerializer):
     class Meta:
@@ -258,11 +258,6 @@ class Device_Item_Serializer(serializers.ModelSerializer):
         model = models.Device_Item
         fields = ('id', 'name', 'type_id', 'extra', 'group_id', 'device_id', 'parent_id', 'val')
 
-class Plugin_Type_Serializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Plugin_Type
-        fields = '__all__'
-
 class Device_Serializer(serializers.ModelSerializer):
     items = Device_Item_Serializer(many=True, read_only=True)
 
@@ -320,8 +315,19 @@ class Log_Value_Serializer(serializers.ModelSerializer):
         model = models.Log_Value
         fields = ('timestamp_msecs', 'item', 'raw_value', 'value', 'user_id')
 
+class JSONSerializerField(serializers.Field):
+    """Serializer for JSONField -- required to make field writable"""
+
+    def to_internal_value(self, data):
+        return data
+
+    def to_representation(self, value):
+        return json.loads(value)
+        # return value
+
 class Chart_Item_Serializer(serializers.ModelSerializer):
-    extra = serializers.JSONField()
+    # extra = serializers.JSONField(True)
+    extra = JSONSerializerField()
 
     class Meta:
         model = models.Chart_Item
