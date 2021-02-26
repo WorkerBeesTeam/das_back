@@ -129,7 +129,7 @@ class DIG_Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Device_Item_Group
-        fields = ('id', 'title', 'type_id', 'params', 'mode', 'statuses')
+        fields = ('id', 'title', 'type_id', 'params', 'mode', 'statuses', 'section_id')
   
 #class GroupType(models.Model):
 #    name = models.CharField(max_length=64)
