@@ -1,7 +1,7 @@
 import environ
 
 project_root = environ.Path(__file__) - 3  
-env = environ.Env(DEBUG=(bool, False),LOG_FILE=(str, ''))  
+env = environ.Env(DEBUG=(bool, False),LOG_FILE=(str, ''),JWT_EXPIRATION_DELTA=(int,900))
 
 CURRENT_ENV = 'dev' # 'dev' is the default environment
 import builtins
@@ -123,13 +123,16 @@ REST_FRAMEWORK = {
 }
 
 import datetime
+JWT_EXPIRATION_DELTA = env('JWT_EXPIRATION_DELTA')
+JWT_EXPIRATION_DELTA = datetime.timedelta(seconds=JWT_EXPIRATION_DELTA or 900)
+
 JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER':
         'das.auth.jwt_response_payload_handler',
     'JWT_PAYLOAD_HANDLER':
         'das.auth.jwt_payload_handler',
     'JWT_ALLOW_REFRESH': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
+    'JWT_EXPIRATION_DELTA': JWT_EXPIRATION_DELTA,
 }
 
 CSRF_COOKIE_SECURE=False
