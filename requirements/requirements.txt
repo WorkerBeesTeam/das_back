@@ -1,5 +1,5 @@
 wheel
-Django==3.0.4
+Django==3.1.9
 django-braces==1.14.0
 django-environ==0.4.5
 django-filter==2.2.0
